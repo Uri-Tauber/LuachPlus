@@ -110,3 +110,23 @@ test('mobile layout and Hebrew RTL remain within the viewport', async ({ page })
   await page.locator('#settings-form [type="submit"]').click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+test('hidden invalid fields do not strand Save and dialogs have accessible names', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#add-event').click();
+  await expect(page.getByRole('dialog', { name: 'New event' })).toBeVisible();
+  await page.locator('[name="title"]').fill('All-day after cleared time');
+  await page.locator('[name="allDay"]').uncheck();
+  await page.locator('[name="startTime"]').fill('');
+  await page.locator('[name="allDay"]').check();
+  await page.locator('#event-form [type="submit"]').click();
+  await expect(page.locator('#event-dialog')).not.toBeVisible();
+  await page.locator('#settings').click();
+  await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+  await page.locator('[data-tab="location"]').click();
+  await page.locator('[name="locationName"]').fill('');
+  await page.locator('[data-tab="display"]').click();
+  await page.locator('#settings-form [type="submit"]').click();
+  await expect(page.locator('[name="locationName"]')).toBeVisible();
+  await expect(page.locator('[name="locationName"]')).toBeFocused();
+});

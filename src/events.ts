@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { addDays, civil, daysInHebrewMonth, fromHebrew, hebrew, isLeap, type CalendarSystem } from './dates';
+import { addDays, civil, daysInHebrewMonth, hebrew, isLeap, type CalendarSystem } from './dates';
 
 export interface UserEvent {
   id: string;
@@ -90,7 +90,3 @@ export function dueReminders(events: UserEvent[], previous: number, now: number)
   });
 }
 
-export function eventHebrewAnchor(event: UserEvent): string {
-  const h = hebrew(event.startDate);
-  return fromHebrew(h);
-}

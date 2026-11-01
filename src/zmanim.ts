@@ -51,7 +51,11 @@ export function zmanLabel(method: string, language: Language): string {
     .replace(/MGA/g, language === 'he' ? 'מג״א' : 'MGA').replace(/Degrees/g, '°')
     .replace(/Minutes/g, language === 'he' ? 'דקות' : 'min').replace(/Zmanis/g, language === 'he' ? 'זמניות' : 'seasonal')
     .replace(/Baal Hatanya/g, language === 'he' ? 'בעל התניא' : 'Baal Hatanya');
-  return `${term[language === 'he' ? 2 : 1]}${suffix ? ` · ${suffix}` : ''}`;
+  const translated = language === 'he' ? suffix.replace(/Geonim/g, 'גאונים').replace(/Ateret Torah/g, 'עטרת תורה')
+    .replace(/Ahavat Shalom/g, 'אהבת שלום').replace(/Fixed Local Chatzos/g, 'חצות מקומי קבוע')
+    .replace(/Greater Than/g, 'המאוחר מבין').replace(/Half Day/g, 'חצי היום').replace(/To Sunset/g, 'עד השקיעה')
+    .replace(/To/g, 'עד').replace(/Before Chatzos/g, 'לפני חצות').replace(/Hours/g, 'שעות').replace(/Hashachar/g, '') : suffix;
+  return `${term[language === 'he' ? 2 : 1]}${translated ? ` · ${translated}` : ''}`;
 }
 export function makeZmanCalendar(date: string, settings: ZmanSettings): ComplexZmanimCalendar {
   const p = settings.location;

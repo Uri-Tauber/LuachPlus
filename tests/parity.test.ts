@@ -8,7 +8,8 @@ const classpath = process.env.KOSHERJAVA_CLASSPATH;
 test.skipIf(!classpath || !existsSync(classpath))('matches the pinned Java upstream across locations and seasons', () => {
   const methods = zmanMethods;
   const mismatches: string[] = [];
-  for (const city of ['Jerusalem', 'New York', 'London', 'Sydney']) {
+  let comparisons = 0, maxDifference = 0;
+  for (const city of ['Jerusalem', 'New York', 'London', 'Sydney', 'Dublin', 'Tromso']) {
     const settings = defaultSettings(); settings.location = presets.find(p => p.name === city)!;
     for (const date of ['2026-03-20', '2026-06-21', '2026-09-22', '2026-12-21']) {
       for (const elevation of [false, true]) {
@@ -19,7 +20,9 @@ test.skipIf(!classpath || !existsSync(classpath))('matches the pinned Java upstr
           const [method, raw] = line.split('=');
           if (raw === 'unsupported') { mismatches.push(`${method}: Java method missing`); continue; }
           const expected = raw === 'null' ? null : Number(raw), actual = computeMethod(calendar, method)?.toMillis() ?? null;
-          if ((actual === null) !== (expected === null) || (actual !== null && expected !== null && Math.abs(actual - expected) > 1000)) {
+          comparisons++;
+          if (actual !== null && expected !== null) maxDifference = Math.max(maxDifference, Math.abs(actual - expected));
+          if ((actual === null) !== (expected === null) || (actual !== null && expected !== null && Math.abs(actual - expected) > 20)) {
             mismatches.push(`${city} ${date} elevation=${elevation} ${method}: JS=${actual}, Java=${expected}, delta=${actual !== null && expected !== null ? actual - expected : 'null mismatch'}`);
           }
         }
@@ -27,4 +30,5 @@ test.skipIf(!classpath || !existsSync(classpath))('matches the pinned Java upstr
     }
   }
   expect(mismatches).toEqual([]);
+  console.info(`${comparisons} Java comparisons; maximum difference ${maxDifference.toFixed(3)} ms`);
 }, 60000);

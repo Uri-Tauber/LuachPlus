@@ -93,7 +93,7 @@ function render() {
       <aside id="day-panel" aria-label="${t('Selected day schedule', 'סדר היום הנבחר')}"></aside>
     </main>
     <footer class="app-footer"><span>${escape(data.settings.location.name)} · ${escape(data.settings.location.timezone)}</span><span>${t('Events are stored on this device', 'האירועים נשמרים במכשיר זה')}</span><button id="about">${t('About & calculation methods', 'אודות ושיטות החישוב')}</button></footer>
-    <dialog id="settings-dialog"></dialog><dialog id="event-dialog"></dialog><dialog id="about-dialog"></dialog>`;
+    <dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
 
   const options: CalendarOptions = {
     plugins: [themes[data.settings.theme], dayGrid, hebrewMonthPlugin, timeGrid, list, interaction, adaptive],
@@ -198,7 +198,7 @@ function renderPanel() {
 
 function openEvent(event: UserEvent) {
   const dialog = $<HTMLDialogElement>('#event-dialog'), existing = data.events.some(e => e.id === event.id);
-  dialog.innerHTML = `<form id="event-form"><div class="dialog-heading"><h2>${existing ? t('Edit event · entire series', 'עריכת אירוע · כל הסדרה') : t('New event', 'אירוע חדש')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
+  dialog.innerHTML = `<form id="event-form"><div class="dialog-heading"><h2 id="event-title">${existing ? t('Edit event · entire series', 'עריכת אירוע · כל הסדרה') : t('New event', 'אירוע חדש')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
     ${field(t('Title', 'כותרת'), input('title', event.title, 'text', 'required maxlength="300" autofocus'))}
     ${field(t('Description', 'תיאור'), `<textarea name="description" maxlength="10000">${escape(event.description)}</textarea>`)}
     <div class="form-grid">${field(t('Event type', 'סוג אירוע'), select('kind', [['event', t('Appointment', 'אירוע')], ['birthday', t('Birthday', 'יום הולדת')], ['yahrzeit', t('Yahrzeit', 'יום זיכרון')]], event.kind))}${field(t('Calendar for date entry & repeats', 'לוח להזנת תאריך וחזרות'), select('calendar', [['hebrew', t('Hebrew', 'עברי')], ['gregorian', t('Gregorian', 'לועזי')]], event.calendar))}</div>
@@ -228,8 +228,16 @@ function openEvent(event: UserEvent) {
     $<HTMLSelectElement>('[name="hebrewMonth"]', form).innerHTML = months.map(([v, l]) => option(v, l, current)).join('');
   }
   function updateConditionalFields() {
-    $('#event-times', form).hidden = $<HTMLInputElement>('[name="allDay"]', form).checked;
-    $('#hebrew-entry', form).hidden = value('calendar') !== 'hebrew';
+    const allDay = $<HTMLInputElement>('[name="allDay"]', form).checked;
+    $('#event-times', form).hidden = allDay;
+    for (const name of ['startTime', 'endTime']) {
+      const control = $<HTMLInputElement>(`[name="${name}"]`, form);
+      control.disabled = allDay;
+      if (allDay && !control.value) control.value = name === 'startTime' ? '09:00' : '10:00';
+    }
+    const hebrewFields = $<HTMLFieldSetElement>('#hebrew-entry', form);
+    hebrewFields.hidden = value('calendar') !== 'hebrew';
+    hebrewFields.disabled = hebrewFields.hidden;
     $('#hebrew-policies', form).hidden = value('calendar') !== 'hebrew' || !['monthly', 'yearly'].includes(value('recurrence'));
     $('#anniversary-note', form).hidden = value('kind') === 'event';
     if (dateInput.value && dateInput.validity.valid) $('#event-date-caption', form).textContent = hebrewLabel(dateInput.value, data.settings.language);
@@ -285,7 +293,7 @@ function openEvent(event: UserEvent) {
 function openSettings(tab = 'display') {
   const dialog = $<HTMLDialogElement>('#settings-dialog'), s = structuredClone(data.settings);
   const methodOptions = (current: string) => zmanMethods.map(m => option(m, zmanLabel(m, s.language), current)).join('');
-  dialog.innerHTML = `<form id="settings-form"><div class="dialog-heading"><h2>${t('Settings', 'הגדרות')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
+  dialog.innerHTML = `<form id="settings-form" novalidate><div class="dialog-heading"><h2 id="settings-title">${t('Settings', 'הגדרות')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
     <div class="settings-tabs" role="tablist">${[['display', t('Display', 'תצוגה')], ['location', t('Location', 'מיקום')], ['zmanim', t('Zmanim & learning', 'זמנים ולימוד')], ['backup', t('Backup', 'גיבוי')]].map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="settings-${id}" data-tab="${id}">${label}</button>`).join('')}</div>
     <section id="settings-display" role="tabpanel" aria-labelledby="tab-display">
       <div class="form-grid">${field(t('Language', 'שפה'), select('language', [['en', 'English'], ['he', 'עברית']], s.language))}${field(t('Direction', 'כיוון'), select('direction', [['auto', t('Follow language', 'לפי השפה')], ['ltr', t('Left to right', 'משמאל לימין')], ['rtl', t('Right to left', 'מימין לשמאל')]], s.direction))}
@@ -369,6 +377,12 @@ function openSettings(tab = 'display') {
   };
   form.onsubmit = async e => {
     e.preventDefault();
+    const invalid = form.querySelector<HTMLInputElement>('input:invalid, select:invalid, textarea:invalid');
+    if (invalid) {
+      const panel = invalid.closest<HTMLElement>('[role="tabpanel"]');
+      if (panel) activate(panel.id.replace('settings-', ''));
+      invalid.reportValidity(); return;
+    }
     const next = structuredClone(data.settings);
     for (const name of ['language', 'direction', 'theme', 'colorScheme', 'endMethod', 'fastStartMethod', 'fastEndMethod'] as const) (next as unknown as Record<string, unknown>)[name] = value(name);
     for (const name of ['seconds', 'printSchedule', 'useElevation', 'bavli', 'yerushalmi'] as const) next[name] = $<HTMLInputElement>(`[name="${name}"]`, form).checked;
@@ -383,7 +397,7 @@ function openSettings(tab = 'display') {
 
 function openAbout() {
   const dialog = $<HTMLDialogElement>('#about-dialog');
-  dialog.innerHTML = `<div class="dialog-heading"><h2>${t('About Luach+', 'אודות Luach+')}</h2><button id="close-about">${t('Close', 'סגירה')}</button></div>
+  dialog.innerHTML = `<div class="dialog-heading"><h2 id="about-title">${t('About Luach+', 'אודות Luach+')}</h2><button id="close-about">${t('Close', 'סגירה')}</button></div>
     <p>${t('Free Hebrew calendar · AGPLv3', 'לוח שנה עברי חופשי · AGPLv3')}</p>
     <h3>${t('Calculation methods', 'שיטות החישוב')}</h3><p>${t('KosherZmanim 0.9.0, NOAA calculator, corresponding to KosherJava 2.5.0. Times use the saved location’s timezone. Missing astronomical times are shown as unavailable.', 'KosherZmanim 0.9.0, חישוב NOAA, בהתאמה ל־KosherJava 2.5.0. הזמנים לפי אזור הזמן של המיקום השמור. זמן שאינו ניתן לחישוב מוצג כלא זמין.')}</p>
     <p>${t('The default selection is based on Itim Labina. Astronomical sunrise replaces visible terrain-based sunrise; not every published Itim formula has yet been verified. No exact published-calendar parity is claimed.', 'בחירת ברירת המחדל מבוססת על עתים לבינה. הנץ האסטרונומי מחליף הנץ נראה המתחשב בתוואי השטח; טרם אומתו כל נוסחאות הלוח. אין התחייבות להתאמה מלאה ללוח המודפס.')}</p>
