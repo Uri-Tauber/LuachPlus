@@ -1,0 +1,17 @@
+import forma from 'fullcalendar/themes/forma';
+import monarch from 'fullcalendar/themes/monarch';
+import breezy from 'fullcalendar/themes/breezy';
+import pulse from 'fullcalendar/themes/pulse';
+import classic from 'fullcalendar/themes/classic';
+import 'fullcalendar/skeleton.css';
+import 'fullcalendar/themes/forma/theme.css';
+import 'fullcalendar/themes/forma/palettes/blue.css';
+import 'fullcalendar/themes/monarch/theme.css';
+import 'fullcalendar/themes/monarch/palettes/purple.css';
+import 'fullcalendar/themes/breezy/theme.css';
+import 'fullcalendar/themes/breezy/palettes/indigo.css';
+import 'fullcalendar/themes/pulse/theme.css';
+import 'fullcalendar/themes/pulse/palettes/red.css';
+import 'fullcalendar/themes/classic/theme.css';
+import 'fullcalendar/themes/classic/palette.css';
+export const themes = { forma, monarch, breezy, pulse, classic };

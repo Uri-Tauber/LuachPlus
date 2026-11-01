@@ -1,0 +1,437 @@
+import { Calendar, type CalendarOptions, type DayCellInfo } from 'fullcalendar';
+import dayGrid from 'fullcalendar/daygrid';
+import timeGrid from 'fullcalendar/timegrid';
+import list from 'fullcalendar/list';
+import interaction from 'fullcalendar/interaction';
+import adaptive from 'fullcalendar-scheduler/adaptive';
+import heLocale from 'fullcalendar/locales/he';
+import { DateTime } from 'luxon';
+import { isTauri, invoke } from '@tauri-apps/api/core';
+import { JewishCalendar } from 'kosher-zmanim';
+import { addDays, calendarDay, civil, dayFacts, formatter, fromHebrew, hebrew, hebrewLabel, localDate, monthRange, monthTitle, shiftMonth } from './dates';
+import { dueReminders, expandEvents, newEvent, validateEvent, type UserEvent } from './events';
+import { presets, validateSettings, type Settings } from './settings';
+import { loadData, saveData, validateData, type AppData } from './storage';
+import { currentHebrewCivilDate, defaultMethods, schedule, studies, zmanLabel, zmanMethods, type ScheduleRow } from './zmanim';
+import { themes } from './themes';
+import { hebrewMonthPlugin } from './hebrew-month';
+import './style.css';
+
+const root = document.querySelector<HTMLDivElement>('#app')!;
+let data: AppData;
+let selected = DateTime.local().toISODate();
+let anchor = selected;
+let view = 'month';
+let calendar: Calendar | undefined;
+let busy = false;
+const t = (en: string, he: string) => data.settings.language === 'he' ? he : en;
+const escape = (value: unknown): string => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+const $ = <T extends HTMLElement = HTMLElement>(selector: string, scope: ParentNode = document): T => scope.querySelector<T>(selector)!;
+const option = (value: string, label: string, current: string) => `<option value="${escape(value)}" ${value === current ? 'selected' : ''}>${escape(label)}</option>`;
+const checkbox = (name: string, label: string, checked: boolean) => `<label class="check"><input type="checkbox" name="${name}" ${checked ? 'checked' : ''}>${escape(label)}</label>`;
+const field = (label: string, control: string) => `<label class="field"><span>${escape(label)}</span>${control}</label>`;
+const input = (name: string, value: string | number, type = 'text', attrs = '') => `<input name="${name}" type="${type}" value="${escape(value)}" ${attrs}>`;
+const select = (name: string, entries: [string, string][], current: string) => `<select name="${name}">${entries.map(([v, l]) => option(v, l, current)).join('')}</select>`;
+const errorText = (e: unknown) => e instanceof Error ? e.message : String(e);
+
+function showMessage(message: string, error = false) {
+  const status = $('#status');
+  status.textContent = message;
+  status.classList.toggle('error', error);
+}
+async function persist(next: AppData): Promise<boolean> {
+  if (busy) return false;
+  busy = true;
+  try { await saveData(next); data = next; return true; }
+  catch (e) { showMessage(`${t('Could not save. Your previous data is intact.', 'לא ניתן לשמור. הנתונים הקודמים נשמרו.')} ${errorText(e)}`, true); return false; }
+  finally { busy = false; }
+}
+function viewName() { return view === 'month' ? (data.settings.calendar === 'hebrew' ? 'hebrewMonth' : 'dayGridMonth') : view; }
+function colorScheme(): 'light' | 'dark' {
+  return data.settings.colorScheme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : data.settings.colorScheme;
+}
+function configureAppearance() {
+  const s = data.settings, html = document.documentElement;
+  html.lang = s.language;
+  html.dir = s.direction === 'auto' ? (s.language === 'he' ? 'rtl' : 'ltr') : s.direction;
+  html.dataset.colorScheme = colorScheme();
+  html.dataset.theme = s.theme;
+  html.classList.toggle('print-schedule', s.printSchedule);
+  const keys = { background: 'background', foreground: 'foreground', muted: 'muted', border: 'border', primary: 'primary', contrast: 'primary-foreground' };
+  for (const [key, token] of Object.entries(keys)) html.style.setProperty(`--app-${key}`, `var(--fc-${s.theme}-${token})`);
+}
+function dayCell(info: DayCellInfo) {
+  const date = localDate(info.date);
+  const s = data.settings, h = hebrew(date), f = formatter(s.language);
+  const facts = dayFacts(date, s.language, s.location.inIsrael);
+  const hd = s.language === 'he' ? f.formatHebrewNumber(h.day) : `${h.day}`;
+  const primary = s.calendar === 'hebrew' ? hd : String(civil(date).day);
+  const secondary = s.calendar === 'hebrew' ? civil(date).toFormat('d') : `${hd} ${f.formatMonth(calendarDay(date))}`;
+  return { html: `<div class="day-content"><div class="day-heading"><button class="day-select" data-date="${date}" aria-label="${escape(hebrewLabel(date, s.language))}">${escape(primary)}</button><span class="secondary-date">${escape(secondary)}</span></div>
+    <div class="day-facts">${[facts.holiday, facts.parasha, facts.omer].filter(Boolean).map(v => `<span title="${escape(v)}">${escape(v)}</span>`).join('')}</div></div>` };
+}
+
+function render() {
+  calendar?.destroy();
+  configureAppearance();
+  root.innerHTML = `
+    <header class="app-header">
+      <div class="identity"><h1>Luach<span>+</span></h1><div id="live-date"></div></div>
+      <div class="app-actions"><button id="add-event" class="primary">${t('Add event', 'הוספת אירוע')}</button><button id="print">${t('Print', 'הדפסה')}</button><button id="settings">${t('Settings', 'הגדרות')}</button></div>
+    </header>
+    <div id="status" role="status" aria-live="polite"></div>
+    <main class="workspace">
+      <section class="calendar-section" aria-label="${t('Calendar', 'לוח שנה')}">
+        <div class="calendar-controls">
+          <div class="navigation"><button id="prev" aria-label="${t('Previous period', 'לתקופה הקודמת')}">${t('Previous', 'הקודם')}</button><button id="today">${t('Today', 'היום')}</button><button id="next" aria-label="${t('Next period', 'לתקופה הבאה')}">${t('Next', 'הבא')}</button></div>
+          <h2 id="period-title"></h2>
+          <div class="view-controls">${select('calendar-system', [['hebrew', t('Hebrew months', 'חודשים עבריים')], ['gregorian', t('Gregorian months', 'חודשים לועזיים')]], data.settings.calendar)}${select('view', [['month', t('Month', 'חודש')], ['timeGridWeek', t('Week', 'שבוע')], ['timeGridDay', t('Day', 'יום')], ['listWeek', t('Agenda', 'סדר יום')]], view)}</div>
+        </div>
+        <div class="jump-date">${field(t('Go to date', 'מעבר לתאריך'), input('jump', selected, 'date', 'min="1900-01-01" max="2200-12-31"'))}<span id="secondary-title"></span></div>
+        <div id="calendar"></div>
+      </section>
+      <aside id="day-panel" aria-label="${t('Selected day schedule', 'סדר היום הנבחר')}"></aside>
+    </main>
+    <footer class="app-footer"><span>${escape(data.settings.location.name)} · ${escape(data.settings.location.timezone)}</span><span>${t('Events are stored on this device', 'האירועים נשמרים במכשיר זה')}</span><button id="about">${t('About & calculation methods', 'אודות ושיטות החישוב')}</button></footer>
+    <dialog id="settings-dialog"></dialog><dialog id="event-dialog"></dialog><dialog id="about-dialog"></dialog>`;
+
+  const options: CalendarOptions = {
+    plugins: [themes[data.settings.theme], dayGrid, hebrewMonthPlugin, timeGrid, list, interaction, adaptive],
+    schedulerLicenseKey: 'AGPL-My-Frontend-And-Backend-Are-Open-Source',
+    initialView: viewName(), initialDate: anchor, locales: [heLocale], locale: data.settings.language,
+    direction: document.documentElement.dir as 'ltr' | 'rtl', colorScheme: colorScheme(), timeZone: 'local',
+    headerToolbar: false, height: 'auto', firstDay: 0, fixedWeekCount: false, showNonCurrentDates: true,
+    nowIndicator: true, dayMaxEvents: 3, selectable: true, editable: false,
+    validRange: { start: '1900-01-01', end: '2201-01-01' },
+    eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+    views: { hebrewMonth: { visibleRange: (date: Date) => monthRange(localDate(date), 'hebrew') } },
+    dayCellTopContent: dayCell,
+    dayCellTopInnerClass: 'luach-cell-inner',
+    dayCellClass: info => {
+      const date = localDate(info.date), classes = [];
+      if (date === selected) classes.push('selected-day');
+      if (view === 'month') { const r = monthRange(anchor, data.settings.calendar); if (date < r.start || date >= r.end) classes.push('outside-month'); }
+      if (dayFacts(date, data.settings.language, data.settings.location.inIsrael).holy) classes.push('holy-day');
+      return classes.join(' ');
+    },
+    datesSet: info => {
+      $('#period-title').textContent = view === 'month' ? monthTitle(anchor, data.settings.calendar, data.settings.language) : info.view.title;
+      $('#secondary-title').textContent = view === 'month' ? monthTitle(anchor, data.settings.calendar === 'hebrew' ? 'gregorian' : 'hebrew', data.settings.language) : '';
+    },
+    dateClick: info => selectDay(info.dateStr.slice(0, 10)),
+    select: info => {
+      if (info.allDay && civil(info.endStr.slice(0, 10)).diff(civil(info.startStr.slice(0, 10)), 'days').days === 1) return;
+      const e = newEvent(info.startStr.slice(0, 10));
+      e.allDay = info.allDay;
+      e.endDate = info.allDay ? addDays(info.endStr.slice(0, 10), -1) : info.endStr.slice(0, 10);
+      if (!info.allDay) { e.startTime = info.startStr.slice(11, 16); e.endTime = info.endStr.slice(11, 16); }
+      openEvent(e);
+      calendar?.unselect();
+    },
+    eventClick: info => { const event = data.events.find(e => e.id === info.event.extendedProps.seriesId); if (event) openEvent(event); },
+    events: (info, success, failure) => {
+      try { success(expandEvents(data.events, info.startStr.slice(0, 10), info.endStr.slice(0, 10))); } catch (e) { failure(e as Error); }
+    },
+  };
+  calendar = new Calendar($('#calendar'), options);
+  calendar.render();
+  $('#add-event').onclick = () => openEvent(newEvent(selected));
+  $('#settings').onclick = () => openSettings();
+  $('#about').onclick = () => openAbout();
+  $('#print').onclick = () => void printCalendar();
+  $('#today').onclick = () => { anchor = selected = DateTime.local().toISODate(); render(); };
+  $('#prev').onclick = () => navigate(-1);
+  $('#next').onclick = () => navigate(1);
+  $<HTMLSelectElement>('[name="view"]').onchange = e => { anchor = localDate(calendar!.getDate()); view = (e.target as HTMLSelectElement).value; render(); };
+  $<HTMLSelectElement>('[name="calendar-system"]').setAttribute('aria-label', t('Month calendar', 'סוג לוח חודשים'));
+  $<HTMLSelectElement>('[name="view"]').setAttribute('aria-label', t('Calendar view', 'תצוגת הלוח'));
+  $<HTMLSelectElement>('[name="calendar-system"]').onchange = async e => {
+    const system = (e.target as HTMLSelectElement).value as Settings['calendar'];
+    if (await persist({ ...data, settings: { ...data.settings, calendar: system } })) render();
+  };
+  $<HTMLInputElement>('[name="jump"]').onchange = e => {
+    const input = e.target as HTMLInputElement;
+    if (!input.value || !input.validity.valid) return;
+    anchor = selected = input.value; render();
+  };
+  $('#calendar').addEventListener('click', e => {
+    const button = (e.target as Element).closest<HTMLButtonElement>('.day-select');
+    if (button) selectDay(button.dataset.date!);
+  });
+  updateHeader(); renderPanel();
+}
+function navigate(direction: number) {
+  const next = view === 'month' ? shiftMonth(anchor, direction, data.settings.calendar) : addDays(anchor, direction * (view === 'timeGridDay' ? 1 : 7));
+  if (next < '1900-01-01' || next > '2200-12-31') return;
+  anchor = next; render();
+}
+function selectDay(date: string) {
+  selected = date;
+  document.querySelectorAll('.selected-day').forEach(el => el.classList.remove('selected-day'));
+  document.querySelectorAll(`[data-date="${date}"]`).forEach(el => { const cell = el.closest('td'); if (cell) cell.classList.add('selected-day'); });
+  $<HTMLInputElement>('[name="jump"]').value = date;
+  renderPanel();
+}
+function updateHeader() {
+  const date = currentHebrewCivilDate(DateTime.local(), data.settings);
+  $('#live-date').textContent = hebrewLabel(date, data.settings.language);
+}
+function timeText(row: ScheduleRow) {
+  if (!row.time) return t('Unavailable', 'לא זמין');
+  const time = row.time.setZone(data.settings.location.timezone);
+  return (data.settings.seconds ? time : time.plus({ seconds: 30 })).toFormat(data.settings.seconds ? 'HH:mm:ss' : 'HH:mm');
+}
+function renderPanel() {
+  const s = data.settings, facts = dayFacts(selected, s.language, s.location.inIsrael);
+  const times = schedule(selected, s, s.language), learning = studies(selected, s, s.language);
+  const occurrences = expandEvents(data.events, selected, addDays(selected, 1));
+  $('#day-panel').innerHTML = `<div class="panel-heading"><h2>${escape(hebrewLabel(selected, s.language))}</h2><p>${escape(civil(selected).setLocale(s.language).toLocaleString({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))}</p><p>${escape([facts.holiday, facts.parasha, facts.omer].filter(Boolean).join(' · '))}</p></div>
+    <section aria-labelledby="zmanim-heading"><div class="section-heading"><h3 id="zmanim-heading">${t('Zmanim', 'זמני היום')}</h3><button class="quiet" id="configure-zmanim">${t('Configure', 'התאמה')}</button></div>
+    <dl class="schedule">${times.map(row => `<div class="schedule-row ${row.special ? 'special-time' : ''}"><dt title="${escape(row.id)}">${escape(row.label)}</dt><dd><time dir="ltr">${escape(timeText(row))}</time></dd></div>`).join('')}</dl></section>
+    ${learning.length ? `<section><h3>${t('Daily learning', 'לימוד יומי')}</h3><dl class="learning">${learning.map(row => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl></section>` : ''}
+    <section class="panel-events"><div class="section-heading"><h3>${t('Events', 'אירועים')}</h3><button class="quiet" id="panel-add">${t('Add', 'הוספה')}</button></div>${occurrences.length ? occurrences.map(o => `<button class="event-row" data-series="${escape(o.extendedProps.seriesId)}"><span>${escape(o.title)}</span><small>${o.allDay ? t('All day', 'כל היום') : escape(o.start.slice(11, 16))}</small></button>`).join('') : `<p class="empty">${t('No events for this day', 'אין אירועים ביום זה')}</p>`}</section>
+    <p class="panel-note">${escape(s.location.name)} · ${s.location.elevation} ${t('m', 'מ׳')}<br>${t('Times shown in the location’s timezone', 'הזמנים לפי אזור הזמן של המיקום')}</p>`;
+  $('#configure-zmanim').onclick = () => openSettings('zmanim');
+  $('#panel-add').onclick = () => openEvent(newEvent(selected));
+  document.querySelectorAll<HTMLButtonElement>('[data-series]').forEach(b => b.onclick = () => openEvent(data.events.find(e => e.id === b.dataset.series)!));
+}
+
+function openEvent(event: UserEvent) {
+  const dialog = $<HTMLDialogElement>('#event-dialog'), existing = data.events.some(e => e.id === event.id);
+  dialog.innerHTML = `<form id="event-form"><div class="dialog-heading"><h2>${existing ? t('Edit event · entire series', 'עריכת אירוע · כל הסדרה') : t('New event', 'אירוע חדש')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
+    ${field(t('Title', 'כותרת'), input('title', event.title, 'text', 'required maxlength="300" autofocus'))}
+    ${field(t('Description', 'תיאור'), `<textarea name="description" maxlength="10000">${escape(event.description)}</textarea>`)}
+    <div class="form-grid">${field(t('Event type', 'סוג אירוע'), select('kind', [['event', t('Appointment', 'אירוע')], ['birthday', t('Birthday', 'יום הולדת')], ['yahrzeit', t('Yahrzeit', 'יום זיכרון')]], event.kind))}${field(t('Calendar for date entry & repeats', 'לוח להזנת תאריך וחזרות'), select('calendar', [['hebrew', t('Hebrew', 'עברי')], ['gregorian', t('Gregorian', 'לועזי')]], event.calendar))}</div>
+    <div class="form-grid">${field(t('Start date', 'תאריך התחלה'), input('startDate', event.startDate, 'date', 'required min="1900-01-01" max="2200-12-31"'))}${field(t('End date · inclusive', 'תאריך סיום · כולל'), input('endDate', event.endDate, 'date', 'required min="1900-01-01" max="2200-12-31"'))}</div>
+    <fieldset id="hebrew-entry"><legend>${t('Hebrew start date', 'תאריך התחלה עברי')}</legend><div class="form-grid three">${field(t('Day', 'יום'), input('hebrewDay', hebrew(event.startDate).day, 'number', 'min="1" max="30"'))}${field(t('Month', 'חודש'), `<select name="hebrewMonth"></select>`)}${field(t('Year', 'שנה'), input('hebrewYear', hebrew(event.startDate).year, 'number', 'min="5660" max="5961"'))}</div></fieldset>
+    <p id="event-date-caption" class="hint"></p>
+    ${checkbox('allDay', t('All-day event', 'אירוע של יום שלם'), event.allDay)}
+    <div class="form-grid" id="event-times">${field(t('Starts at', 'שעת התחלה'), input('startTime', event.startTime, 'time', 'required'))}${field(t('Ends at', 'שעת סיום'), input('endTime', event.endTime, 'time', 'required'))}</div>
+    <div class="form-grid">${field(t('Repeat', 'חזרה'), select('recurrence', [['none', t('Does not repeat', 'ללא חזרה')], ['weekly', t('Weekly', 'כל שבוע')], ['monthly', t('Monthly', 'כל חודש')], ['yearly', t('Yearly', 'כל שנה')]], event.recurrence))}${field(t('Repeat until · optional', 'חזרה עד · לא חובה'), input('until', event.until, 'date', 'max="2200-12-31"'))}</div>
+    <div id="hebrew-policies" class="form-grid">${field(t('If the day is missing', 'אם היום אינו קיים'), select('missingDay', [['last', t('Last day of month', 'היום האחרון בחודש')], ['skip', t('Skip that occurrence', 'דילוג על המופע')]], event.missingDay))}${field(t('Adar mapping', 'התאמת חודש אדר'), select('adar', [['second', t('Common Adar → Adar II', 'אדר רגיל ← אדר ב׳')], ['first', t('Common Adar → Adar I', 'אדר רגיל ← אדר א׳')], ['both', t('Common Adar → both Adars', 'אדר רגיל ← שני חודשי אדר')], ['skip', t('Skip when month is missing', 'דילוג כשהחודש אינו קיים')]], event.adar))}</div>
+    <p id="anniversary-note" class="hint">${t('Birthday and yahrzeit labels use your explicit recurrence choices.', 'תוויות יום הולדת ויום זיכרון משתמשות בכללי החזרה שבחרת.')}</p>
+    ${field(t('Reminder', 'תזכורת'), select('reminder', [['', t('No reminder', 'ללא תזכורת')], ...[0, 5, 10, 15, 30, 60, 1440].map(n => [String(n), `${n} ${t('minutes before', 'דקות לפני')}`] as [string, string])], event.reminderMinutes === null ? '' : String(event.reminderMinutes)))}
+    <p class="hint">${t('Reminders run while Luach+ is open. All-day reminders use 09:00 on your computer’s clock.', 'תזכורות פועלות כשהיישום פתוח. תזכורת לאירוע יום שלם בשעה 09:00 לפי שעון המחשב.')}</p>
+    <p class="form-error" role="alert"></p><div class="dialog-actions">${existing ? `<button type="button" id="delete-event" class="danger">${t('Delete entire series', 'מחיקת כל הסדרה')}</button>` : ''}<button type="button" class="close-dialog">${t('Cancel', 'ביטול')}</button><button type="submit" class="primary">${t('Save event', 'שמירת אירוע')}</button></div>
+    <div id="delete-confirmation" hidden><p>${t('Delete this event and all its occurrences?', 'למחוק אירוע זה ואת כל המופעים שלו?')}</p><button type="button" id="confirm-delete" class="danger">${t('Confirm deletion', 'אישור מחיקה')}</button></div></form>`;
+  const form = $<HTMLFormElement>('#event-form'), value = (name: string) => ($<HTMLInputElement>(`[name="${name}"]`, form)).value;
+  const dateInput = $<HTMLInputElement>('[name="startDate"]', form), endInput = $<HTMLInputElement>('[name="endDate"]', form);
+  function updateHebrewMonths() {
+    const year = Number(value('hebrewYear'));
+    if (!Number.isInteger(year) || year < 5660 || year > 5961) return;
+    const current = value('hebrewMonth') || String(hebrew(dateInput.value).month);
+    const f = formatter(data.settings.language), months: [string, string][] = [];
+    for (const month of [7, 8, 9, 10, 11, 12, 13, 1, 2, 3, 4, 5, 6]) {
+      try { months.push([String(month), f.formatMonth(new JewishCalendar(year, month, 1))]); } catch { continue; }
+    }
+    if (!new JewishCalendar(year, 7, 1).isJewishLeapYear()) { const i = months.findIndex(([m]) => m === '13'); if (i >= 0) months.splice(i, 1); }
+    $<HTMLSelectElement>('[name="hebrewMonth"]', form).innerHTML = months.map(([v, l]) => option(v, l, current)).join('');
+  }
+  function updateConditionalFields() {
+    $('#event-times', form).hidden = $<HTMLInputElement>('[name="allDay"]', form).checked;
+    $('#hebrew-entry', form).hidden = value('calendar') !== 'hebrew';
+    $('#hebrew-policies', form).hidden = value('calendar') !== 'hebrew' || !['monthly', 'yearly'].includes(value('recurrence'));
+    $('#anniversary-note', form).hidden = value('kind') === 'event';
+    if (dateInput.value && dateInput.validity.valid) $('#event-date-caption', form).textContent = hebrewLabel(dateInput.value, data.settings.language);
+  }
+  dateInput.onchange = () => {
+    if (!dateInput.validity.valid) return;
+    if (endInput.value < dateInput.value) endInput.value = dateInput.value;
+    const h = hebrew(dateInput.value);
+    $<HTMLInputElement>('[name="hebrewYear"]', form).value = String(h.year);
+    $<HTMLInputElement>('[name="hebrewDay"]', form).value = String(h.day);
+    updateHebrewMonths(); $<HTMLSelectElement>('[name="hebrewMonth"]', form).value = String(h.month);
+    updateConditionalFields();
+  };
+  for (const name of ['hebrewYear', 'hebrewMonth', 'hebrewDay']) $(`[name="${name}"]`, form).onchange = () => {
+    try {
+      if (name === 'hebrewYear') updateHebrewMonths();
+      dateInput.value = fromHebrew({ year: +value('hebrewYear'), month: +value('hebrewMonth'), day: +value('hebrewDay') });
+      if (endInput.value < dateInput.value) endInput.value = dateInput.value;
+      $('.form-error', form).textContent = ''; updateConditionalFields();
+    } catch { $('.form-error', form).textContent = t('That Hebrew date does not exist.', 'התאריך העברי אינו קיים.'); }
+  };
+  for (const name of ['allDay', 'calendar', 'recurrence', 'kind']) $(`[name="${name}"]`, form).onchange = () => {
+    if (name === 'kind' && value('kind') !== 'event' && value('recurrence') === 'none') $<HTMLSelectElement>('[name="recurrence"]', form).value = 'yearly';
+    updateConditionalFields();
+  };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const next: UserEvent = { ...event, title: value('title').trim(), description: value('description'), kind: value('kind') as UserEvent['kind'],
+      startDate: value('startDate'), endDate: value('endDate'), allDay: $<HTMLInputElement>('[name="allDay"]', form).checked,
+      startTime: value('startTime'), endTime: value('endTime'), calendar: value('calendar') as UserEvent['calendar'], recurrence: value('recurrence') as UserEvent['recurrence'],
+      missingDay: value('missingDay') as UserEvent['missingDay'], adar: value('adar') as UserEvent['adar'], until: value('until'), reminderMinutes: value('reminder') === '' ? null : +value('reminder') };
+    try {
+      if (next.calendar === 'hebrew') {
+        const entered = fromHebrew({ year: +value('hebrewYear'), month: +value('hebrewMonth'), day: +value('hebrewDay') });
+        if (entered !== next.startDate) throw new Error(t('Check the Hebrew date.', 'יש לבדוק את התאריך העברי.'));
+      }
+      validateEvent(next);
+      if (next.reminderMinutes !== null) await requestNotificationPermission();
+      if (!(await persist({ ...data, events: [...data.events.filter(e => e.id !== event.id), next] }))) {
+        $('.form-error', form).textContent = t('Could not save. Try again or export a backup.', 'לא ניתן לשמור. נסו שוב או ייצאו גיבוי.'); return;
+      }
+      dialog.close(); calendar?.refetchEvents(); renderPanel(); showMessage(t('Event saved', 'האירוע נשמר'));
+    } catch (err) { $('.form-error', form).textContent = errorText(err); }
+  };
+  if (existing) {
+    $('#delete-event', form).onclick = () => { $('#delete-confirmation', form).hidden = false; $('#confirm-delete', form).focus(); };
+    $('#confirm-delete', form).onclick = async () => { if (await persist({ ...data, events: data.events.filter(e => e.id !== event.id) })) { dialog.close(); calendar?.refetchEvents(); renderPanel(); } };
+  }
+  dialog.querySelectorAll<HTMLButtonElement>('.close-dialog').forEach(b => b.onclick = () => dialog.close());
+  updateHebrewMonths(); updateConditionalFields(); dialog.showModal();
+}
+
+function openSettings(tab = 'display') {
+  const dialog = $<HTMLDialogElement>('#settings-dialog'), s = structuredClone(data.settings);
+  const methodOptions = (current: string) => zmanMethods.map(m => option(m, zmanLabel(m, s.language), current)).join('');
+  dialog.innerHTML = `<form id="settings-form"><div class="dialog-heading"><h2>${t('Settings', 'הגדרות')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
+    <div class="settings-tabs" role="tablist">${[['display', t('Display', 'תצוגה')], ['location', t('Location', 'מיקום')], ['zmanim', t('Zmanim & learning', 'זמנים ולימוד')], ['backup', t('Backup', 'גיבוי')]].map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="settings-${id}" data-tab="${id}">${label}</button>`).join('')}</div>
+    <section id="settings-display" role="tabpanel" aria-labelledby="tab-display">
+      <div class="form-grid">${field(t('Language', 'שפה'), select('language', [['en', 'English'], ['he', 'עברית']], s.language))}${field(t('Direction', 'כיוון'), select('direction', [['auto', t('Follow language', 'לפי השפה')], ['ltr', t('Left to right', 'משמאל לימין')], ['rtl', t('Right to left', 'מימין לשמאל')]], s.direction))}
+      ${field(t('Theme', 'ערכת נושא'), select('theme', Object.keys(themes).map(k => [k, k[0].toUpperCase() + k.slice(1)]), s.theme))}${field(t('Appearance', 'מראה'), select('colorScheme', [['system', t('Follow system', 'לפי המערכת')], ['light', t('Light', 'בהיר')], ['dark', t('Dark', 'כהה')]], s.colorScheme))}</div>
+      ${checkbox('seconds', t('Show seconds in zmanim', 'הצגת שניות בזמנים'), s.seconds)}${checkbox('printSchedule', t('Append selected day schedule when printing', 'צירוף סדר היום הנבחר להדפסה'), s.printSchedule)}
+    </section>
+    <section id="settings-location" role="tabpanel" aria-labelledby="tab-location">
+      ${field(t('Find a preset location', 'חיפוש מיקום מהרשימה'), '<input type="search" id="location-search" autocomplete="off">')}
+      ${field(t('Location presets', 'מיקומים מוגדרים'), `<select id="location-presets" size="5"></select>`)}
+      <div class="form-grid">${field(t('Location name', 'שם המיקום'), input('locationName', s.location.name, 'text', 'required maxlength="150"'))}${field(t('Timezone · IANA', 'אזור זמן · IANA'), input('timezone', s.location.timezone, 'text', 'required list="timezones" dir="ltr"'))}
+      ${field(t('Latitude', 'קו רוחב'), input('latitude', s.location.latitude, 'number', 'required min="-90" max="90" step="any" dir="ltr"'))}${field(t('Longitude', 'קו אורך'), input('longitude', s.location.longitude, 'number', 'required min="-180" max="180" step="any" dir="ltr"'))}
+      ${field(t('Elevation · metres', 'גובה · מטרים'), input('elevation', s.location.elevation, 'number', 'required min="-500" max="9000" step="any"'))}${field(t('Candle lighting · minutes before sunset', 'הדלקת נרות · דקות לפני השקיעה'), input('candleMinutes', s.location.candleMinutes, 'number', 'required min="0" max="120" step="1"'))}</div>
+      ${checkbox('inIsrael', t('Israel holiday observance', 'מנהגי החגים בארץ ישראל'), s.location.inIsrael)}${checkbox('useElevation', t('Use elevation in elevation-sensitive zmanim', 'שימוש בגובה בזמנים התלויים בו'), s.useElevation)}
+      <p class="hint">${t('Location affects zmanim only. Your event dates and clock times stay unchanged.', 'המיקום משפיע על הזמנים בלבד. תאריכי האירועים ושעותיהם נשארים ללא שינוי.')}</p>
+      <datalist id="timezones">${Intl.supportedValuesOf('timeZone').map(zone => `<option value="${zone}"></option>`).join('')}</datalist>
+    </section>
+    <section id="settings-zmanim" role="tabpanel" aria-labelledby="tab-zmanim">
+      <div class="section-heading"><p>${t('Select all opinions you want to see together.', 'בחרו את כל השיטות שברצונכם לראות יחד.')}</p><button type="button" id="reset-zmanim">${t('Reset default selection', 'איפוס בחירת הזמנים')}</button></div>
+      <p class="hint">${t('Itim Labina inspired selection; astronomical sunrise. See About for the formula mapping and remaining differences.', 'בחירה על פי עתים לבינה; הנץ אסטרונומי. פירוט השיטות וההבדלים בחלון אודות.')}</p>
+      ${field(t('Filter zmanim', 'סינון זמנים'), '<input type="search" id="zman-search">')}
+      <div class="zman-choices">${zmanMethods.filter(m => m !== 'getCandleLighting').map(m => `<label class="check zman-choice" data-search="${escape(`${zmanLabel(m, 'en')} ${zmanLabel(m, 'he')} ${m}`.toLowerCase())}"><input type="checkbox" name="zman" value="${m}" ${s.zmanMethods.includes(m) ? 'checked' : ''}><span>${escape(zmanLabel(m, s.language))}<small dir="ltr">${m}</small></span></label>`).join('')}</div>
+      <h3>${t('Special days', 'ימים מיוחדים')}</h3><p class="hint">${t('Candle lighting and fast / Shabbos / Yom Tov boundaries appear automatically on the relevant days.', 'הדלקת נרות וגבולות הצומות, השבת והחגים מופיעים אוטומטית בימים המתאימים.')}</p>
+      ${field(t('Shabbos / Yom Tov ends; second-night candles', 'צאת שבת וחג; הדלקת נרות בלילה השני'), `<select name="endMethod">${methodOptions(s.endMethod)}</select>`)}
+      ${field(t('Minor fast begins', 'תחילת צום קל'), `<select name="fastStartMethod">${methodOptions(s.fastStartMethod)}</select>`)}${field(t('Fast ends', 'סוף הצום'), `<select name="fastEndMethod">${methodOptions(s.fastEndMethod)}</select>`)}
+      <h3>${t('Daily learning', 'לימוד יומי')}</h3>${checkbox('bavli', t('Daf Yomi Bavli', 'דף יומי בבלי'), s.bavli)}${checkbox('yerushalmi', t('Daf Yomi Yerushalmi', 'דף יומי ירושלמי'), s.yerushalmi)}
+    </section>
+    <section id="settings-backup" role="tabpanel" aria-labelledby="tab-backup"><h3>${t('Keep a copy of your calendar', 'שמירת עותק של הלוח')}</h3><p>${t('Backups include all events and saved settings.', 'הגיבוי כולל את כל האירועים וההגדרות השמורות.')}</p><button type="button" id="export">${t('Export backup', 'ייצוא גיבוי')}</button>
+      ${field(t('Restore a Luach+ backup', 'שחזור גיבוי Luach+'), '<input type="file" id="import" accept="application/json,.json">')}<div id="restore-preview" hidden></div>
+    </section>
+    <p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="close-dialog">${t('Cancel', 'ביטול')}</button><button type="submit" class="primary">${t('Save settings', 'שמירת הגדרות')}</button></div></form>`;
+  const form = $<HTMLFormElement>('#settings-form'), value = (name: string) => $<HTMLInputElement>(`[name="${name}"]`, form).value;
+  function activate(id: string) {
+    dialog.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(b => { const active = b.dataset.tab === id; b.setAttribute('aria-selected', String(active)); b.tabIndex = active ? 0 : -1; });
+    for (const name of ['display', 'location', 'zmanim', 'backup']) $(`#settings-${name}`, dialog).hidden = name !== id;
+  }
+  dialog.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b, index, buttons) => {
+    b.onclick = () => activate(b.dataset.tab!);
+    b.onkeydown = e => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+      e.preventDefault();
+      const next = e.key === 'Home' ? 0 : e.key === 'End' ? buttons.length - 1 : (index + (e.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+      activate(buttons[next].dataset.tab!); buttons[next].focus();
+    };
+  });
+  function filterLocations() {
+    const filter = $<HTMLInputElement>('#location-search').value.toLowerCase();
+    $('#location-presets').innerHTML = `<option value="">${t('Choose a location', 'בחירת מיקום')}</option>` + presets.map((p, i) => ({ p, i })).filter(({ p }) => `${p.name} ${p.country}`.toLowerCase().includes(filter)).map(({ p, i }) => option(String(i), `${p.name}, ${p.country}`, '')).join('');
+  }
+  $('#location-search').oninput = filterLocations; filterLocations();
+  $('#location-presets').onchange = e => {
+    const index = (e.target as HTMLSelectElement).value;
+    if (index === '') return;
+    const p = presets[+index];
+    for (const [name, v] of Object.entries({ locationName: p.name, timezone: p.timezone, latitude: p.latitude, longitude: p.longitude, elevation: p.elevation, candleMinutes: p.candleMinutes })) $<HTMLInputElement>(`[name="${name}"]`, form).value = String(v);
+    $<HTMLInputElement>('[name="inIsrael"]', form).checked = p.inIsrael;
+  };
+  $('#zman-search').oninput = () => {
+    const query = $<HTMLInputElement>('#zman-search').value.toLowerCase();
+    form.querySelectorAll<HTMLElement>('.zman-choice').forEach(el => el.hidden = !el.dataset.search!.includes(query));
+  };
+  $('#reset-zmanim').onclick = () => form.querySelectorAll<HTMLInputElement>('[name="zman"]').forEach(input => input.checked = defaultMethods.includes(input.value));
+  $('#export').onclick = async () => {
+    if (isTauri()) {
+      try { await invoke('export_backup', { data: JSON.stringify(data, null, 2) }); }
+      catch (err) { $('.form-error', form).textContent = errorText(err); }
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = `luach-plus-${DateTime.local().toISODate()}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  $<HTMLInputElement>('#import').onchange = async e => {
+    const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return;
+    try {
+      if (file.size > 10_000_000) throw new Error(t('Backup is too large.', 'קובץ הגיבוי גדול מדי.'));
+      const restored = validateData(JSON.parse(await file.text()));
+      const preview = $('#restore-preview'); preview.hidden = false;
+      preview.innerHTML = `<p>${t('Replace current events and settings with this backup?', 'להחליף את האירועים וההגדרות בגיבוי זה?')} (${restored.events.length} ${t('events', 'אירועים')})</p><button type="button" id="confirm-restore" class="danger">${t('Replace with backup', 'החלפה בגיבוי')}</button>`;
+      $('#confirm-restore').onclick = async () => { if (await persist(restored)) { dialog.close(); render(); showMessage(t('Backup restored', 'הגיבוי שוחזר')); } };
+    } catch (err) { $('.form-error', form).textContent = errorText(err); }
+  };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const next = structuredClone(data.settings);
+    for (const name of ['language', 'direction', 'theme', 'colorScheme', 'endMethod', 'fastStartMethod', 'fastEndMethod'] as const) (next as unknown as Record<string, unknown>)[name] = value(name);
+    for (const name of ['seconds', 'printSchedule', 'useElevation', 'bavli', 'yerushalmi'] as const) next[name] = $<HTMLInputElement>(`[name="${name}"]`, form).checked;
+    next.location = { name: value('locationName').trim(), timezone: value('timezone').trim(), latitude: +value('latitude'), longitude: +value('longitude'), elevation: +value('elevation'), candleMinutes: +value('candleMinutes'), inIsrael: $<HTMLInputElement>('[name="inIsrael"]', form).checked };
+    next.zmanMethods = Array.from(form.querySelectorAll<HTMLInputElement>('[name="zman"]:checked'), input => input.value);
+    try { validateSettings(next); if (await persist({ ...data, settings: next })) { dialog.close(); render(); } else $('.form-error', form).textContent = t('Could not save settings. Try again.', 'לא ניתן לשמור הגדרות. נסו שוב.'); }
+    catch (err) { $('.form-error', form).textContent = errorText(err); }
+  };
+  dialog.querySelectorAll<HTMLButtonElement>('.close-dialog').forEach(b => b.onclick = () => dialog.close());
+  activate(tab); dialog.showModal();
+}
+
+function openAbout() {
+  const dialog = $<HTMLDialogElement>('#about-dialog');
+  dialog.innerHTML = `<div class="dialog-heading"><h2>${t('About Luach+', 'אודות Luach+')}</h2><button id="close-about">${t('Close', 'סגירה')}</button></div>
+    <p>${t('Free Hebrew calendar · AGPLv3', 'לוח שנה עברי חופשי · AGPLv3')}</p>
+    <h3>${t('Calculation methods', 'שיטות החישוב')}</h3><p>${t('KosherZmanim 0.9.0, NOAA calculator, corresponding to KosherJava 2.5.0. Times use the saved location’s timezone. Missing astronomical times are shown as unavailable.', 'KosherZmanim 0.9.0, חישוב NOAA, בהתאמה ל־KosherJava 2.5.0. הזמנים לפי אזור הזמן של המיקום השמור. זמן שאינו ניתן לחישוב מוצג כלא זמין.')}</p>
+    <p>${t('The default selection is based on Itim Labina. Astronomical sunrise replaces visible terrain-based sunrise; not every published Itim formula has yet been verified. No exact published-calendar parity is claimed.', 'בחירת ברירת המחדל מבוססת על עתים לבינה. הנץ האסטרונומי מחליף הנץ נראה המתחשב בתוואי השטח; טרם אומתו כל נוסחאות הלוח. אין התחייבות להתאמה מלאה ללוח המודפס.')}</p>
+    <p>${t('Minutes round to the nearest minute. Enable seconds for the calculated clock time.', 'הדקות מעוגלות לדקה הקרובה. הצגת שניות מאפשרת לראות את שעת החישוב.')}</p>
+    <h3>${t('Selected methods', 'שיטות שנבחרו')}</h3><ul>${data.settings.zmanMethods.map(m => `<li>${escape(zmanLabel(m, data.settings.language))}<small dir="ltr">${m}</small></li>`).join('')}</ul>
+    <h3>${t('Data and dependencies', 'נתונים וספריות')}</h3><p>FullCalendar · KosherZmanim · Tauri · Luxon</p><p>${t('Location data: legacy Luach+, MyZman (LGPL-2.1). Community candle offsets: legacy ItimHebrewCalendar reference. Coordinates and local customs can be edited in settings.', 'נתוני מיקום: Luach+ הישן, MyZman ‏(LGPL-2.1). זמני הדלקת נרות לפי נתוני ItimHebrewCalendar בפרויקט הישן. ניתן לערוך את הנתונים בהגדרות.')}</p>`;
+  $('#close-about').onclick = () => dialog.close(); dialog.showModal();
+}
+async function printCalendar() {
+  try {
+    if (isTauri()) await invoke('print_window');
+    else window.print();
+  } catch (e) { showMessage(`${t('Printing failed:', 'ההדפסה נכשלה:')} ${errorText(e)}`, true); }
+}
+async function requestNotificationPermission() {
+  if (isTauri()) {
+    const { isPermissionGranted, requestPermission } = await import('@tauri-apps/plugin-notification');
+    if (!(await isPermissionGranted())) await requestPermission();
+  } else if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission();
+}
+let lastReminderCheck = Date.now();
+async function checkReminders() {
+  if (!data) return;
+  const now = Date.now(), previous = lastReminderCheck; lastReminderCheck = now;
+  // Sleep/resume and closed-app gaps do not replay old reminders.
+  if (now - previous > 120000) return;
+  for (const occurrence of dueReminders(data.events, previous, now)) {
+    showMessage(`${t('Reminder', 'תזכורת')}: ${occurrence.title}`);
+    try {
+      if (isTauri()) { const { sendNotification } = await import('@tauri-apps/plugin-notification'); sendNotification({ title: 'Luach+', body: occurrence.title }); }
+      else if ('Notification' in window && Notification.permission === 'granted') new Notification('Luach+', { body: occurrence.title });
+    } catch { /* The in-app reminder remains visible if OS notifications are unavailable. */ }
+  }
+}
+async function start() {
+  try { data = await loadData(); render(); }
+  catch (e) {
+    root.innerHTML = `<main class="load-error"><h1>Luach+</h1><p>Could not read saved data / לא ניתן לקרוא את הנתונים השמורים</p><p>${escape(errorText(e))}</p><button id="recover">Download saved data / הורדת הנתונים</button><p>Your saved data has not been overwritten. / הנתונים השמורים לא הוחלפו.</p></main>`;
+    $('#recover').onclick = async () => {
+      const raw = isTauri() ? await invoke<string>('load_data') : localStorage.getItem('luach-plus-v1');
+      if (!raw) return;
+      if (isTauri()) { await invoke('export_backup', { data: raw }); return; }
+      const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }));
+      const a = document.createElement('a'); a.href = url; a.download = 'luach-plus-recovery.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    return;
+  }
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (data.settings.colorScheme === 'system') render(); });
+  setInterval(() => { updateHeader(); void checkReminders(); }, 1000);
+}
+void start();
