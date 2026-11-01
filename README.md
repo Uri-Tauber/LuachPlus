@@ -15,7 +15,7 @@ Open this repository's **Releases** page and download the file for your system:
 | Linux | `.AppImage` | Make the file executable, then open it. |
 | Debian / Ubuntu | `.deb` | Open it with your package installer. |
 
-A new release is published after each change to `main` passes the tests and
+A new release is published after each change to the default branch passes the tests and
 builds for all three systems. Each release identifies the commit it contains.
 
 ## Get started
