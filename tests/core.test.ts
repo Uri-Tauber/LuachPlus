@@ -4,7 +4,8 @@ import { addDays, calendarDay, fromHebrew, hebrew, monthRange, shiftMonth } from
 import { dueReminders, expandEvents, newEvent, validateEvent } from '../src/events';
 import { defaultSettings, presets, validateSettings } from '../src/settings';
 import { validateData } from '../src/storage';
-import { currentHebrewCivilDate, makeZmanCalendar, schedule, zmanMethods } from '../src/zmanim';
+import { currentHebrewCivilDate, makeZmanCalendar, schedule } from '../src/zmanim';
+import libraryMethods from '../src/data/zman-methods.json';
 
 describe('calendar boundaries', () => {
   test('known new year and reversible conversions across leap Adar', () => {
@@ -69,7 +70,7 @@ describe('zmanim and settings', () => {
     validateSettings(settings);
     for (const location of presets) validateSettings({ ...settings, location });
     const cal = makeZmanCalendar('2026-11-01', settings);
-    for (const method of zmanMethods) expect(typeof (cal as unknown as Record<string, unknown>)[method]).toBe('function');
+    for (const method of libraryMethods) expect(typeof (cal as unknown as Record<string, unknown>)[method]).toBe('function');
   });
   test('candle lighting appears on Friday, not an ordinary Sunday', () => {
     const s = defaultSettings();

@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { ComplexZmanimCalendar, GeoLocation, JewishCalendar, NOAACalculator, YomiCalculator, YerushalmiYomiCalculator } from 'kosher-zmanim';
 import methods from './data/zman-methods.json';
 import { addDays, calendarDay, formatter, type Language } from './dates';
+import { itimMethods } from './itim';
 
 export interface Location {
   name: string; latitude: number; longitude: number; elevation: number;
@@ -11,13 +12,13 @@ export interface ZmanSettings {
   location: Location; useElevation: boolean; zmanMethods: string[]; endMethod: string;
   fastStartMethod: string; fastEndMethod: string; bavli: boolean; yerushalmi: boolean;
 }
-export const zmanMethods: readonly string[] = methods;
+export const zmanMethods: readonly string[] = [...Object.keys(itimMethods), ...methods];
 export const defaultMethods = [
-  'getAlos19Point8Degrees', 'getAlos16Point1Degrees', 'getMisheyakir11Point5Degrees',
-  'getSunrise', 'getSofZmanShmaMGA16Point1Degrees', 'getSofZmanShmaGRA',
-  'getSofZmanTfilaMGA16Point1Degrees', 'getSofZmanTfilaGRA', 'getChatzos',
-  'getMinchaGedolaGreaterThan30', 'getMinchaKetana', 'getPlagHamincha',
-  'getSunset', 'getTzaisGeonim4Point61Degrees', 'getTzaisGeonim8Point5Degrees', 'getSolarMidnight',
+  'itimDawn90', 'itimDawn72', 'getMisheyakir11Point5Degrees',
+  'getSunrise', 'itimShemaStringent', 'itimShema90', 'getSofZmanShmaGRA',
+  'itimTfila90', 'getSofZmanTfilaGRA', 'itimNoon',
+  'itimMinchaGedola', 'getMinchaKetana', 'getPlagHamincha',
+  'getSunset', 'getTzaisGeonim6Point45Degrees', 'itimTzaisChazonIsh', 'itimMidnight',
 ];
 
 const terms: [string, string, string][] = [
@@ -41,6 +42,7 @@ const terms: [string, string, string][] = [
   ['BeginAstronomicalTwilight', 'Astronomical dawn', 'תחילת דמדומים אסטרונומיים'], ['EndAstronomicalTwilight', 'Astronomical dusk', 'סוף דמדומים אסטרונומיים'],
 ];
 export function zmanLabel(method: string, language: Language): string {
+  if (itimMethods[method]) return itimMethods[method][language];
   const base = method.replace(/^get/, '');
   const term = terms.find(([key]) => base.startsWith(key));
   if (!term) return base.replace(/([a-z])([A-Z])/g, '$1 $2');
@@ -61,6 +63,7 @@ export function makeZmanCalendar(date: string, settings: ZmanSettings): ComplexZ
   return result;
 }
 export function computeMethod(calendar: ComplexZmanimCalendar, method: string): DateTime | null {
+  if (itimMethods[method]) return itimMethods[method].compute(calendar);
   if (!methods.includes(method)) throw new Error(`Unknown zman: ${method}`);
   const fn = (calendar as unknown as Record<string, () => DateTime | null>)[method];
   const result = fn.call(calendar);
@@ -99,9 +102,9 @@ export function schedule(date: string, settings: ZmanSettings, language: Languag
 export function studies(date: string, settings: ZmanSettings, language: Language): { label: string; value: string }[] {
   const day = calendarDay(date, settings.location.inIsrael), f = formatter(language);
   const rows = [];
-  if (settings.bavli) rows.push({ label: language === 'he' ? 'דף יומי בבלי' : 'Daf Yomi Bavli', value: f.formatDafYomiBavli(YomiCalculator.getDafYomiBavli(day)) });
+  if (settings.bavli) rows.push({ label: language === 'he' ? 'דף יומי בבלי' : 'Daf Yomi Bavli', value: date < '1923-09-11' ? (language === 'he' ? 'טרם התחיל המחזור' : 'Cycle has not started') : f.formatDafYomiBavli(YomiCalculator.getDafYomiBavli(day)) });
   if (settings.yerushalmi) {
-    const daf = YerushalmiYomiCalculator.getDafYomiYerushalmi(day);
+    const daf = date < '1980-02-02' ? null : YerushalmiYomiCalculator.getDafYomiYerushalmi(day);
     rows.push({ label: language === 'he' ? 'דף יומי ירושלמי' : 'Daf Yomi Yerushalmi', value: daf ? f.formatDafYomiYerushalmi(daf) : (language === 'he' ? 'אין לימוד היום' : 'No assignment today') });
   }
   return rows;
