@@ -17,3 +17,5 @@ The zman method inventory is generated from the pinned kosher-zmanim public
 TypeScript declarations with scripts/generate-zman-catalog.mjs. It contains
 public DateTime-producing getters callable without required arguments,
 including inherited getters and optional-argument lunar methods.
+Two no-argument runtime methods, getMinchaKetana and getPlagHamincha, are
+included explicitly because the 0.9.0 declarations omit their no-argument overloads.

@@ -31,7 +31,7 @@ Preserve the useful legacy grid/sidebar composition. Use FullCalendar's existing
 
 ## Evidence and open research
 
-Legacy repository: ../luach-plus, especially feature/events-reminders, feature/per-location-candle-lighting and feature/sunset-rollover. Location dataset credits MyZman (LGPL-2.1); offsets reference ItimHebrewCalendar. Revalidate Windows timezone identifiers against actual locations instead of mechanically converting them. Itim's exact current formula mapping is still research work and must remain explicit in documentation.
+Legacy repository: ../luach-plus, especially feature/events-reminders, feature/per-location-candle-lighting and feature/sunset-rollover. Location dataset credits MyZman (LGPL-2.1); offsets reference ItimHebrewCalendar. Revalidate Windows timezone identifiers against actual locations instead of mechanically converting them. Itim method definitions from the publisher's 5786 Emanuel edition, page 3, are mapped to library primitives in src/itim.ts. Terrain, location-specific horizon and printed rounding differences remain explicit in docs/calculations.md.
 
 ## Deferred
 

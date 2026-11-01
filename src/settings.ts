@@ -10,7 +10,7 @@ export function defaultSettings(): Settings {
   return { language: navigator.language.startsWith('he') ? 'he' : 'en', direction: 'auto', theme: 'forma',
     colorScheme: 'system', seconds: false, calendar: 'hebrew', printSchedule: false,
     location: { ...locations.find(p => p.name === 'Jerusalem')! }, useElevation: false,
-    zmanMethods: [...defaultMethods], endMethod: 'getTzaisGeonim8Point5Degrees', fastStartMethod: 'getAlos16Point1Degrees',
+    zmanMethods: [...defaultMethods], endMethod: 'getTzaisGeonim8Point5Degrees', fastStartMethod: 'itimDawn72',
     fastEndMethod: 'getTzaisGeonim6Point45Degrees', bavli: true, yerushalmi: false };
 }
 export function validateSettings(s: Settings): void {

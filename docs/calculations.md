@@ -59,3 +59,7 @@ KOSHERJAVA_CLASSPATH=/path/to/classes npm test
 ```
 
 Without that environment variable the parity test is explicitly skipped.
+The current matrix makes 9,504 comparisons: 198 methods across six locations,
+four seasonal dates and both elevation policies. Null availability must agree;
+numeric results must differ by no more than 20 milliseconds, allowing the
+Java library's integer truncation versus TypeScript fractional milliseconds.

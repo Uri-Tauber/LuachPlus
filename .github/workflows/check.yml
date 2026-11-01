@@ -46,7 +46,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            bundles: deb
+            bundles: deb,appimage
           - os: macos-latest
             bundles: app,dmg
           - os: windows-latest
