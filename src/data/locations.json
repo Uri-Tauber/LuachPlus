@@ -1,0 +1,2252 @@
+[
+  {
+    "name": "Acre",
+    "latitude": 32.928,
+    "longitude": 35.076,
+    "elevation": 8,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Afula",
+    "latitude": 32.609,
+    "longitude": 35.289,
+    "elevation": 59,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Arad",
+    "latitude": 31.259,
+    "longitude": 35.213,
+    "elevation": 606,
+    "inIsrael": true,
+    "candleMinutes": 22,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ashdod",
+    "latitude": 31.801,
+    "longitude": 34.644,
+    "elevation": 23,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ashkelon",
+    "latitude": 31.669,
+    "longitude": 34.574,
+    "elevation": 59,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Bat Yam",
+    "latitude": 32.017,
+    "longitude": 34.745,
+    "elevation": 40,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Beer Sheva",
+    "latitude": 31.252,
+    "longitude": 34.791,
+    "elevation": 273,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Beer Yaakov",
+    "latitude": 31.944,
+    "longitude": 34.831,
+    "elevation": 67,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Beit She'an",
+    "latitude": 32.497,
+    "longitude": 35.496,
+    "elevation": -145,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Beit Shemesh",
+    "latitude": 31.731,
+    "longitude": 34.991,
+    "elevation": 263,
+    "inIsrael": true,
+    "candleMinutes": 40,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Beitar Illit",
+    "latitude": 31.701,
+    "longitude": 35.112,
+    "elevation": 671,
+    "inIsrael": true,
+    "candleMinutes": 40,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Binyamina",
+    "latitude": 32.514,
+    "longitude": 34.945,
+    "elevation": 28,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Bnei Brak",
+    "latitude": 32.085,
+    "longitude": 34.834,
+    "elevation": 48,
+    "inIsrael": true,
+    "candleMinutes": 22,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Chispin",
+    "latitude": 32.846,
+    "longitude": 35.777,
+    "elevation": 415,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Dimona",
+    "latitude": 31.07,
+    "longitude": 35.034,
+    "elevation": 558,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Eilat",
+    "latitude": 29.558,
+    "longitude": 34.952,
+    "elevation": 65,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ein Bokek",
+    "latitude": 31.199,
+    "longitude": 35.364,
+    "elevation": -363,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Elad",
+    "latitude": 32.05,
+    "longitude": 34.951,
+    "elevation": 115,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Eli",
+    "latitude": 32.07,
+    "longitude": 35.265,
+    "elevation": 627,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Givat Zeev",
+    "latitude": 31.861,
+    "longitude": 35.168,
+    "elevation": 634,
+    "inIsrael": true,
+    "candleMinutes": 40,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Givatayim",
+    "latitude": 32.072,
+    "longitude": 34.813,
+    "elevation": 33,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Hadera",
+    "latitude": 32.442,
+    "longitude": 34.904,
+    "elevation": 22,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Hafez Hayim",
+    "latitude": 31.485,
+    "longitude": 34.471,
+    "elevation": 76,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Haifa",
+    "latitude": 32.794,
+    "longitude": 34.99,
+    "elevation": 263,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Herzliya",
+    "latitude": 32.162,
+    "longitude": 34.845,
+    "elevation": 54,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Holon",
+    "latitude": 32.01,
+    "longitude": 34.779,
+    "elevation": 38,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Jerusalem",
+    "latitude": 31.772,
+    "longitude": 35.217,
+    "elevation": 786,
+    "inIsrael": true,
+    "candleMinutes": 40,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Karmiel",
+    "latitude": 32.915,
+    "longitude": 35.305,
+    "elevation": 280,
+    "inIsrael": true,
+    "candleMinutes": 25,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kedumim",
+    "latitude": 32.217,
+    "longitude": 35.158,
+    "elevation": 356,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kfar Chabad",
+    "latitude": 31.967,
+    "longitude": 34.8,
+    "elevation": 69,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kfar Hasidim",
+    "latitude": 32.743,
+    "longitude": 35.082,
+    "elevation": 18,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kfar Maimon",
+    "latitude": 31.417,
+    "longitude": 34.583,
+    "elevation": 149,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Arba",
+    "latitude": 31.529,
+    "longitude": 35.119,
+    "elevation": 961,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Gat",
+    "latitude": 31.61,
+    "longitude": 34.764,
+    "elevation": 127,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Malachi",
+    "latitude": 31.729,
+    "longitude": 34.747,
+    "elevation": 66,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Sefer",
+    "latitude": 31.933,
+    "longitude": 35.042,
+    "elevation": 299,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Shmona",
+    "latitude": 33.207,
+    "longitude": 35.572,
+    "elevation": 286,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Tivon",
+    "latitude": 32.717,
+    "longitude": 35.127,
+    "elevation": 18,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Kiryat Yam",
+    "latitude": 32.849,
+    "longitude": 35.07,
+    "elevation": 11,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Komemiyut",
+    "latitude": 31.65,
+    "longitude": 34.733,
+    "elevation": 84,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Lod",
+    "latitude": 31.947,
+    "longitude": 34.89,
+    "elevation": 66,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Maagalim",
+    "latitude": 31.493,
+    "longitude": 34.658,
+    "elevation": 136,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Maale Adumim",
+    "latitude": 31.777,
+    "longitude": 35.298,
+    "elevation": 481,
+    "inIsrael": true,
+    "candleMinutes": 40,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Meron",
+    "latitude": 32.987,
+    "longitude": 35.437,
+    "elevation": 887,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Migdal HaEmek",
+    "latitude": 32.676,
+    "longitude": 35.24,
+    "elevation": 134,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Mitzpe Ramon",
+    "latitude": 30.609,
+    "longitude": 34.801,
+    "elevation": 854,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Modiin Illit",
+    "latitude": 31.932,
+    "longitude": 35.044,
+    "elevation": 284,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Nahalal",
+    "latitude": 32.675,
+    "longitude": 35.233,
+    "elevation": 134,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Nahariya",
+    "latitude": 33.009,
+    "longitude": 35.098,
+    "elevation": 17,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Nazareth",
+    "latitude": 32.699,
+    "longitude": 35.304,
+    "elevation": 417,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Negohot",
+    "latitude": 31.493,
+    "longitude": 34.967,
+    "elevation": 530,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Netanya",
+    "latitude": 32.333,
+    "longitude": 34.86,
+    "elevation": 27,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Nir Etzion",
+    "latitude": 32.699,
+    "longitude": 34.975,
+    "elevation": 130,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Pardes Hanna",
+    "latitude": 32.474,
+    "longitude": 34.967,
+    "elevation": 45,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Petah Tikva",
+    "latitude": 32.087,
+    "longitude": 34.888,
+    "elevation": 43,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ra'anana",
+    "latitude": 32.184,
+    "longitude": 34.874,
+    "elevation": 76,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ramat Beit Shemesh Aleph",
+    "latitude": 31.71,
+    "longitude": 34.985,
+    "elevation": 346,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ramat HaSharon",
+    "latitude": 32.146,
+    "longitude": 34.839,
+    "elevation": 76,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ramat Magshimim",
+    "latitude": 32.845,
+    "longitude": 35.808,
+    "elevation": 423,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Ramla",
+    "latitude": 31.929,
+    "longitude": 34.866,
+    "elevation": 88,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Rehovot",
+    "latitude": 31.894,
+    "longitude": 34.812,
+    "elevation": 51,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Rishon LeZion",
+    "latitude": 31.971,
+    "longitude": 34.789,
+    "elevation": 69,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Rosh HaAyin",
+    "latitude": 32.096,
+    "longitude": 34.957,
+    "elevation": 67,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Rosh Pina",
+    "latitude": 32.969,
+    "longitude": 35.543,
+    "elevation": 650,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Shaalvim",
+    "latitude": 31.87,
+    "longitude": 34.985,
+    "elevation": 156,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Shavei Zion",
+    "latitude": 33.009,
+    "longitude": 35.098,
+    "elevation": 17,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Shechem",
+    "latitude": 32.221,
+    "longitude": 35.254,
+    "elevation": 762,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Tel Aviv",
+    "latitude": 32.081,
+    "longitude": 34.781,
+    "elevation": 20,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Telz Stone",
+    "latitude": 31.789,
+    "longitude": 35.101,
+    "elevation": 695,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Tiberias",
+    "latitude": 32.792,
+    "longitude": 35.531,
+    "elevation": -128,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Toshia",
+    "latitude": 31.42,
+    "longitude": 34.59,
+    "elevation": 149,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Tifrach",
+    "latitude": 31.325,
+    "longitude": 34.673,
+    "elevation": 152,
+    "inIsrael": true,
+    "candleMinutes": 20,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Yeruham",
+    "latitude": 30.987,
+    "longitude": 34.922,
+    "elevation": 460,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Zephath",
+    "latitude": 32.965,
+    "longitude": 35.494,
+    "elevation": 759,
+    "inIsrael": true,
+    "candleMinutes": 30,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Zichron Yaakov",
+    "latitude": 32.574,
+    "longitude": 34.952,
+    "elevation": 156,
+    "inIsrael": true,
+    "candleMinutes": 18,
+    "country": "Israel",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "name": "Alesund",
+    "latitude": 62.472,
+    "longitude": 6.155,
+    "elevation": 20,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Norway",
+    "timezone": "Europe/Oslo"
+  },
+  {
+    "name": "Alexandria",
+    "latitude": 31.2,
+    "longitude": 29.919,
+    "elevation": 11,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Egypt",
+    "timezone": "Africa/Cairo"
+  },
+  {
+    "name": "Algiers",
+    "latitude": 36.754,
+    "longitude": 3.059,
+    "elevation": 3,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Algeria",
+    "timezone": "Africa/Algiers"
+  },
+  {
+    "name": "Amsterdam",
+    "latitude": 52.374,
+    "longitude": 4.89,
+    "elevation": 10,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Netherlands",
+    "timezone": "Europe/Amsterdam"
+  },
+  {
+    "name": "Antwerp",
+    "latitude": 51.219,
+    "longitude": 4.403,
+    "elevation": 12,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Belgium",
+    "timezone": "Europe/Brussels"
+  },
+  {
+    "name": "Athens",
+    "latitude": 37.984,
+    "longitude": 23.728,
+    "elevation": 108,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Greece",
+    "timezone": "Europe/Athens"
+  },
+  {
+    "name": "Atlanta",
+    "latitude": 33.749,
+    "longitude": -84.388,
+    "elevation": 324,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Bad Kissingen",
+    "latitude": 50.199,
+    "longitude": 10.078,
+    "elevation": 210,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Germany",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "name": "Baghdad",
+    "latitude": 33.315,
+    "longitude": 44.366,
+    "elevation": 39,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Iraq",
+    "timezone": "Asia/Baghdad"
+  },
+  {
+    "name": "Baku",
+    "latitude": 40.409,
+    "longitude": 49.867,
+    "elevation": 76,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Azerbaijan",
+    "timezone": "Asia/Baku"
+  },
+  {
+    "name": "Baltimore",
+    "latitude": 39.29,
+    "longitude": -76.612,
+    "elevation": 12,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Bangkok",
+    "latitude": 13.756,
+    "longitude": 100.502,
+    "elevation": 7,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Thailand",
+    "timezone": "Asia/Bangkok"
+  },
+  {
+    "name": "Barcelona",
+    "latitude": 41.385,
+    "longitude": 2.173,
+    "elevation": 0,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Spain",
+    "timezone": "Europe/Madrid"
+  },
+  {
+    "name": "Basel",
+    "latitude": 47.56,
+    "longitude": 7.589,
+    "elevation": 282,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Beijing",
+    "latitude": 39.904,
+    "longitude": 116.407,
+    "elevation": 41,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "China",
+    "timezone": "Asia/Shanghai"
+  },
+  {
+    "name": "Berlin",
+    "latitude": 52.52,
+    "longitude": 13.405,
+    "elevation": 37,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Germany",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "name": "Bogota",
+    "latitude": 4.711,
+    "longitude": -74.072,
+    "elevation": 2549,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Colombia",
+    "timezone": "America/Bogota"
+  },
+  {
+    "name": "Boisbriand",
+    "latitude": 45.613,
+    "longitude": -73.838,
+    "elevation": 43,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Canada",
+    "timezone": "America/Toronto"
+  },
+  {
+    "name": "Bonn",
+    "latitude": 50.737,
+    "longitude": 7.098,
+    "elevation": 113,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Germany",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "name": "Boro Park",
+    "latitude": 40.635,
+    "longitude": -73.99,
+    "elevation": 18,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Boston",
+    "latitude": 42.36,
+    "longitude": -71.059,
+    "elevation": 14,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Brasilia",
+    "latitude": -15.794,
+    "longitude": -47.882,
+    "elevation": 1172,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Brazil",
+    "timezone": "America/Sao_Paulo"
+  },
+  {
+    "name": "Brooklyn",
+    "latitude": 40.678,
+    "longitude": -73.944,
+    "elevation": 20,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Brussels",
+    "latitude": 50.85,
+    "longitude": 4.352,
+    "elevation": 30,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Belgium",
+    "timezone": "Europe/Brussels"
+  },
+  {
+    "name": "Bucharest",
+    "latitude": 44.427,
+    "longitude": 26.103,
+    "elevation": 60,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Romania",
+    "timezone": "Europe/Bucharest"
+  },
+  {
+    "name": "Budapest",
+    "latitude": 47.5,
+    "longitude": 19.08,
+    "elevation": 113,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Hungary",
+    "timezone": "Europe/Budapest"
+  },
+  {
+    "name": "Buenos Aires",
+    "latitude": -34.604,
+    "longitude": -58.382,
+    "elevation": 15,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Argentina",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  {
+    "name": "Cape Town",
+    "latitude": -33.925,
+    "longitude": 18.424,
+    "elevation": 28,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "South Africa",
+    "timezone": "Africa/Johannesburg"
+  },
+  {
+    "name": "Caracas",
+    "latitude": 10.481,
+    "longitude": -66.904,
+    "elevation": 1188,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Venezuela",
+    "timezone": "America/Caracas"
+  },
+  {
+    "name": "Casablanca",
+    "latitude": 33.573,
+    "longitude": -7.59,
+    "elevation": 38,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Morocco",
+    "timezone": "Africa/Casablanca"
+  },
+  {
+    "name": "Chandigarh",
+    "latitude": 30.733,
+    "longitude": 76.779,
+    "elevation": 344,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "India",
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Chicago",
+    "latitude": 41.878,
+    "longitude": -87.63,
+    "elevation": 187,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Cincinnati",
+    "latitude": 39.103,
+    "longitude": -84.512,
+    "elevation": 188,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Cleveland",
+    "latitude": 41.499,
+    "longitude": -81.694,
+    "elevation": 211,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Cologne",
+    "latitude": 50.938,
+    "longitude": 6.96,
+    "elevation": 51,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Germany",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "name": "Copenhagen",
+    "latitude": 55.676,
+    "longitude": 12.568,
+    "elevation": 8,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Denmark",
+    "timezone": "Europe/Copenhagen"
+  },
+  {
+    "name": "Dallas",
+    "latitude": 32.777,
+    "longitude": -96.797,
+    "elevation": 141,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Deerfield Beach",
+    "latitude": 26.318,
+    "longitude": -80.1,
+    "elevation": 7,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Denver",
+    "latitude": 39.739,
+    "longitude": -104.99,
+    "elevation": 1628,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Denver"
+  },
+  {
+    "name": "Detroit",
+    "latitude": 42.331,
+    "longitude": -83.046,
+    "elevation": 186,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Detroit"
+  },
+  {
+    "name": "Dublin",
+    "latitude": 53.35,
+    "longitude": -6.26,
+    "elevation": 13,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Ireland",
+    "timezone": "Europe/Dublin"
+  },
+  {
+    "name": "Edinburgh",
+    "latitude": 55.953,
+    "longitude": -3.188,
+    "elevation": 132,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Fes",
+    "latitude": 34.033,
+    "longitude": -5,
+    "elevation": 421,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Morocco",
+    "timezone": "Africa/Casablanca"
+  },
+  {
+    "name": "Formosa",
+    "latitude": -26.178,
+    "longitude": -58.178,
+    "elevation": 66,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Argentina",
+    "timezone": "America/Argentina/Cordoba"
+  },
+  {
+    "name": "Frankfurt",
+    "latitude": 50.111,
+    "longitude": 8.682,
+    "elevation": 107,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Germany",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "name": "Gateshead",
+    "latitude": 54.953,
+    "longitude": -1.603,
+    "elevation": 83,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Geneva",
+    "latitude": 46.204,
+    "longitude": 6.143,
+    "elevation": 372,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Gibraltar",
+    "latitude": 36.145,
+    "longitude": -5.353,
+    "elevation": 102,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Gibraltar",
+    "timezone": "Europe/Gibraltar"
+  },
+  {
+    "name": "Glasgow",
+    "latitude": 55.864,
+    "longitude": -4.252,
+    "elevation": 21,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Gomel",
+    "latitude": 52.435,
+    "longitude": 30.975,
+    "elevation": 134,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Belarus",
+    "timezone": "Europe/Minsk"
+  },
+  {
+    "name": "Gothenburg",
+    "latitude": 57.709,
+    "longitude": 11.975,
+    "elevation": 5,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Sweden",
+    "timezone": "Europe/Stockholm"
+  },
+  {
+    "name": "Hamburg",
+    "latitude": 53.551,
+    "longitude": 9.994,
+    "elevation": 4,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Germany",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "name": "Hartford CT",
+    "latitude": 41.764,
+    "longitude": -72.685,
+    "elevation": 21,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Helsinki",
+    "latitude": 60.17,
+    "longitude": 24.935,
+    "elevation": 17,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Finland",
+    "timezone": "Europe/Helsinki"
+  },
+  {
+    "name": "Hollywood",
+    "latitude": 26.011,
+    "longitude": -80.149,
+    "elevation": 11,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Hong Kong",
+    "latitude": 22.319,
+    "longitude": 114.169,
+    "elevation": 158,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Hong Kong",
+    "timezone": "Asia/Hong_Kong"
+  },
+  {
+    "name": "Honolulu",
+    "latitude": 21.307,
+    "longitude": -157.858,
+    "elevation": 189,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "Pacific/Honolulu"
+  },
+  {
+    "name": "Houston",
+    "latitude": 29.76,
+    "longitude": -95.37,
+    "elevation": 25,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Ifrane",
+    "latitude": 33.527,
+    "longitude": -5.11,
+    "elevation": 1657,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Morocco",
+    "timezone": "Africa/Casablanca"
+  },
+  {
+    "name": "Istanbul",
+    "latitude": 41.008,
+    "longitude": 28.978,
+    "elevation": 133,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Turkey",
+    "timezone": "Europe/Istanbul"
+  },
+  {
+    "name": "Johannesburg",
+    "latitude": -26.204,
+    "longitude": 28.047,
+    "elevation": 1548,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "South Africa",
+    "timezone": "Africa/Johannesburg"
+  },
+  {
+    "name": "Kansas City",
+    "latitude": 39.1,
+    "longitude": -94.579,
+    "elevation": 236,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Kiev",
+    "latitude": 50.45,
+    "longitude": 30.523,
+    "elevation": 147,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Ukraine",
+    "timezone": "Europe/Kiev"
+  },
+  {
+    "name": "Kiryat Joel",
+    "latitude": 41.342,
+    "longitude": -74.168,
+    "elevation": 204,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Lakewood",
+    "latitude": 40.096,
+    "longitude": -74.223,
+    "elevation": 18,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Lausanne",
+    "latitude": 46.52,
+    "longitude": 6.632,
+    "elevation": 599,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Leeds",
+    "latitude": 53.801,
+    "longitude": -1.549,
+    "elevation": 56,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Liverpool",
+    "latitude": 53.408,
+    "longitude": -2.992,
+    "elevation": 31,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "London",
+    "latitude": 51.507,
+    "longitude": -0.128,
+    "elevation": 23,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Los Angeles",
+    "latitude": 34.052,
+    "longitude": -118.244,
+    "elevation": 89,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "name": "Lucerne",
+    "latitude": 47.05,
+    "longitude": 8.31,
+    "elevation": 432,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Luxembourg",
+    "latitude": 49.612,
+    "longitude": 6.132,
+    "elevation": 426,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Luxembourg",
+    "timezone": "Europe/Luxembourg"
+  },
+  {
+    "name": "Madesimo",
+    "latitude": 46.435,
+    "longitude": 9.354,
+    "elevation": 1396,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Italy",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Madrid",
+    "latitude": 40.417,
+    "longitude": -3.704,
+    "elevation": 603,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Spain",
+    "timezone": "Europe/Madrid"
+  },
+  {
+    "name": "Malaga",
+    "latitude": 36.721,
+    "longitude": -4.421,
+    "elevation": 11,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Spain",
+    "timezone": "Europe/Madrid"
+  },
+  {
+    "name": "Manchester",
+    "latitude": 53.481,
+    "longitude": -2.243,
+    "elevation": 60,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Marrakech",
+    "latitude": 31.63,
+    "longitude": -7.981,
+    "elevation": 483,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Morocco",
+    "timezone": "Africa/Casablanca"
+  },
+  {
+    "name": "Marseille",
+    "latitude": 43.297,
+    "longitude": 5.37,
+    "elevation": 0,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "France",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "name": "Medellin",
+    "latitude": 6.244,
+    "longitude": -75.581,
+    "elevation": 1478,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Colombia",
+    "timezone": "America/Bogota"
+  },
+  {
+    "name": "Meknes",
+    "latitude": 33.894,
+    "longitude": -5.547,
+    "elevation": 509,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Morocco",
+    "timezone": "Africa/Casablanca"
+  },
+  {
+    "name": "Melbourne",
+    "latitude": -37.814,
+    "longitude": 144.963,
+    "elevation": 26,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Australia",
+    "timezone": "Australia/Melbourne"
+  },
+  {
+    "name": "Memphis TN",
+    "latitude": 35.15,
+    "longitude": -90.049,
+    "elevation": 82,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Mexico City",
+    "latitude": 19.433,
+    "longitude": -99.133,
+    "elevation": 2240,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Mexico",
+    "timezone": "America/Mexico_City"
+  },
+  {
+    "name": "Miami",
+    "latitude": 25.762,
+    "longitude": -80.192,
+    "elevation": 7,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Miami Beach",
+    "latitude": 25.791,
+    "longitude": -80.13,
+    "elevation": 5,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Milan",
+    "latitude": 45.464,
+    "longitude": 9.19,
+    "elevation": 122,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Italy",
+    "timezone": "Europe/Rome"
+  },
+  {
+    "name": "Milwaukee",
+    "latitude": 43.039,
+    "longitude": -87.906,
+    "elevation": 193,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Minneapolis",
+    "latitude": 44.978,
+    "longitude": -93.265,
+    "elevation": 247,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Minsk",
+    "latitude": 53.905,
+    "longitude": 27.562,
+    "elevation": 235,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Belarus",
+    "timezone": "Europe/Minsk"
+  },
+  {
+    "name": "Monsey",
+    "latitude": 41.111,
+    "longitude": -74.069,
+    "elevation": 159,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Montevideo",
+    "latitude": -34.901,
+    "longitude": -56.165,
+    "elevation": 29,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Uruguay",
+    "timezone": "America/Montevideo"
+  },
+  {
+    "name": "Monticello",
+    "latitude": 41.656,
+    "longitude": -74.689,
+    "elevation": 405,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Montreal",
+    "latitude": 45.502,
+    "longitude": -73.567,
+    "elevation": 24,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Canada",
+    "timezone": "America/Toronto"
+  },
+  {
+    "name": "Montreux",
+    "latitude": 46.431,
+    "longitude": 6.911,
+    "elevation": 370,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Moscow",
+    "latitude": 55.756,
+    "longitude": 37.617,
+    "elevation": 138,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Russia",
+    "timezone": "Europe/Moscow"
+  },
+  {
+    "name": "New Delhi",
+    "latitude": 28.614,
+    "longitude": 77.209,
+    "elevation": 217,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "India",
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "New Orleans",
+    "latitude": 29.951,
+    "longitude": -90.072,
+    "elevation": 2,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "New Square",
+    "latitude": 41.14,
+    "longitude": -74.029,
+    "elevation": 159,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "New York",
+    "latitude": 40.713,
+    "longitude": -74.006,
+    "elevation": 4,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Newcastle",
+    "latitude": 54.978,
+    "longitude": -1.617,
+    "elevation": 20,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Nice",
+    "latitude": 43.71,
+    "longitude": 7.262,
+    "elevation": 36,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "France",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "name": "Odessa",
+    "latitude": 46.483,
+    "longitude": 30.723,
+    "elevation": 56,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Ukraine",
+    "timezone": "Europe/Kiev"
+  },
+  {
+    "name": "Oslo",
+    "latitude": 59.914,
+    "longitude": 10.752,
+    "elevation": 18,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Norway",
+    "timezone": "Europe/Oslo"
+  },
+  {
+    "name": "Ottawa",
+    "latitude": 45.422,
+    "longitude": -75.697,
+    "elevation": 70,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Canada",
+    "timezone": "America/Toronto"
+  },
+  {
+    "name": "Palm Springs",
+    "latitude": 33.83,
+    "longitude": -116.545,
+    "elevation": 146,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "name": "Panama City",
+    "latitude": 8.982,
+    "longitude": -79.52,
+    "elevation": 0,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Panama",
+    "timezone": "America/Panama"
+  },
+  {
+    "name": "Paris",
+    "latitude": 48.857,
+    "longitude": 2.352,
+    "elevation": 49,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "France",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "name": "Perth",
+    "latitude": -31.951,
+    "longitude": 115.861,
+    "elevation": 1,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Australia",
+    "timezone": "Australia/Perth"
+  },
+  {
+    "name": "Philadelphia",
+    "latitude": 39.953,
+    "longitude": -75.165,
+    "elevation": 11,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Phoenix",
+    "latitude": 33.448,
+    "longitude": -112.074,
+    "elevation": 331,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Phoenix"
+  },
+  {
+    "name": "Pittsburgh",
+    "latitude": 40.441,
+    "longitude": -79.996,
+    "elevation": 341,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Prague",
+    "latitude": 50.076,
+    "longitude": 14.438,
+    "elevation": 207,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Czech Republic",
+    "timezone": "Europe/Prague"
+  },
+  {
+    "name": "Providence",
+    "latitude": 41.824,
+    "longitude": -71.413,
+    "elevation": -11,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Rabat",
+    "latitude": 34.021,
+    "longitude": -6.842,
+    "elevation": 1,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Morocco",
+    "timezone": "Africa/Casablanca"
+  },
+  {
+    "name": "Reykjavik",
+    "latitude": 64.147,
+    "longitude": -21.943,
+    "elevation": 0,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Iceland",
+    "timezone": "Atlantic/Reykjavik"
+  },
+  {
+    "name": "Rhodes",
+    "latitude": 36.434,
+    "longitude": 28.222,
+    "elevation": 131,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Greece",
+    "timezone": "Europe/Athens"
+  },
+  {
+    "name": "Riga",
+    "latitude": 56.95,
+    "longitude": 24.105,
+    "elevation": 0,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Latvia",
+    "timezone": "Europe/Riga"
+  },
+  {
+    "name": "Rio de Janeiro",
+    "latitude": -22.907,
+    "longitude": -43.173,
+    "elevation": 6,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Brazil",
+    "timezone": "America/Sao_Paulo"
+  },
+  {
+    "name": "Rome",
+    "latitude": 41.903,
+    "longitude": 12.496,
+    "elevation": 62,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Italy",
+    "timezone": "Europe/Rome"
+  },
+  {
+    "name": "Rovaniemi",
+    "latitude": 66.504,
+    "longitude": 25.729,
+    "elevation": 82,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Finland",
+    "timezone": "Europe/Helsinki"
+  },
+  {
+    "name": "Saint Louis",
+    "latitude": 38.627,
+    "longitude": -90.199,
+    "elevation": 161,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Chicago"
+  },
+  {
+    "name": "Salford",
+    "latitude": 53.488,
+    "longitude": -2.29,
+    "elevation": 56,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "San Diego",
+    "latitude": 32.716,
+    "longitude": -117.161,
+    "elevation": 26,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "name": "San Francisco",
+    "latitude": 37.775,
+    "longitude": -122.419,
+    "elevation": 31,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "name": "San Jacinto",
+    "latitude": -34.545,
+    "longitude": -55.872,
+    "elevation": 56,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Uruguay",
+    "timezone": "America/Montevideo"
+  },
+  {
+    "name": "San Jose",
+    "latitude": 37.338,
+    "longitude": -121.886,
+    "elevation": 20,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "name": "San Jose de Mayo",
+    "latitude": -34.338,
+    "longitude": -56.714,
+    "elevation": 44,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Uruguay",
+    "timezone": "America/Montevideo"
+  },
+  {
+    "name": "Sao Paulo",
+    "latitude": -23.551,
+    "longitude": -46.633,
+    "elevation": 757,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Brazil",
+    "timezone": "America/Sao_Paulo"
+  },
+  {
+    "name": "Seattle",
+    "latitude": 47.606,
+    "longitude": -122.332,
+    "elevation": 25,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "name": "Seoul",
+    "latitude": 37.567,
+    "longitude": 126.978,
+    "elevation": 38,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "South Korea",
+    "timezone": "Asia/Seoul"
+  },
+  {
+    "name": "Splügen",
+    "latitude": 46.553,
+    "longitude": 9.319,
+    "elevation": 1593,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  },
+  {
+    "name": "Stockholm",
+    "latitude": 59.329,
+    "longitude": 18.069,
+    "elevation": 51,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Sweden",
+    "timezone": "Europe/Stockholm"
+  },
+  {
+    "name": "Sunderland",
+    "latitude": 54.905,
+    "longitude": -1.381,
+    "elevation": 44,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United Kingdom",
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Sydney",
+    "latitude": -33.869,
+    "longitude": 151.209,
+    "elevation": 79,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Australia",
+    "timezone": "Australia/Sydney"
+  },
+  {
+    "name": "Tacuarembo",
+    "latitude": -31.717,
+    "longitude": -55.981,
+    "elevation": 124,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Uruguay",
+    "timezone": "America/Montevideo"
+  },
+  {
+    "name": "Tienen",
+    "latitude": 50.811,
+    "longitude": 4.938,
+    "elevation": 171,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Belgium",
+    "timezone": "Europe/Brussels"
+  },
+  {
+    "name": "Tokyo",
+    "latitude": 35.676,
+    "longitude": 139.65,
+    "elevation": 16,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Japan",
+    "timezone": "Asia/Tokyo"
+  },
+  {
+    "name": "Toronto",
+    "latitude": 43.653,
+    "longitude": -79.383,
+    "elevation": 152,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Canada",
+    "timezone": "America/Toronto"
+  },
+  {
+    "name": "Toulon",
+    "latitude": 43.124,
+    "longitude": 5.928,
+    "elevation": 179,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "France",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "name": "Toulouse",
+    "latitude": 43.605,
+    "longitude": 1.444,
+    "elevation": 156,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "France",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "name": "Tromso",
+    "latitude": 69.65,
+    "longitude": 18.955,
+    "elevation": 20,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Norway",
+    "timezone": "Europe/Oslo"
+  },
+  {
+    "name": "Tucson",
+    "latitude": 32.223,
+    "longitude": -110.975,
+    "elevation": 740,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/Phoenix"
+  },
+  {
+    "name": "Uman",
+    "latitude": 48.75,
+    "longitude": 30.222,
+    "elevation": 173,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Ukraine",
+    "timezone": "Europe/Kiev"
+  },
+  {
+    "name": "Venice",
+    "latitude": 45.441,
+    "longitude": 12.316,
+    "elevation": 0,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Italy",
+    "timezone": "Europe/Rome"
+  },
+  {
+    "name": "Victoria",
+    "latitude": 22.278,
+    "longitude": 114.175,
+    "elevation": 158,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Hong Kong",
+    "timezone": "Asia/Hong_Kong"
+  },
+  {
+    "name": "Vienna",
+    "latitude": 48.208,
+    "longitude": 16.374,
+    "elevation": 179,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Austria",
+    "timezone": "Europe/Vienna"
+  },
+  {
+    "name": "Warsaw",
+    "latitude": 52.23,
+    "longitude": 21.012,
+    "elevation": 115,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Poland",
+    "timezone": "Europe/Warsaw"
+  },
+  {
+    "name": "Washington DC",
+    "latitude": 38.895,
+    "longitude": -77.036,
+    "elevation": 41,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "United States",
+    "timezone": "America/New_York"
+  },
+  {
+    "name": "Winnipeg",
+    "latitude": 49.895,
+    "longitude": -97.138,
+    "elevation": 233,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Canada",
+    "timezone": "America/Winnipeg"
+  },
+  {
+    "name": "Zurich",
+    "latitude": 47.377,
+    "longitude": 8.542,
+    "elevation": 419,
+    "inIsrael": false,
+    "candleMinutes": 18,
+    "country": "Switzerland",
+    "timezone": "Europe/Zurich"
+  }
+]
