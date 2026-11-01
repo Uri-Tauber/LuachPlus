@@ -1,7 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs, io::Write, path::PathBuf};
-use tauri::{menu::{Menu, MenuItem}, tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}, Manager};
+use tauri::Manager;
+#[cfg(not(target_os = "linux"))]
+use tauri::{menu::{Menu, MenuItem}, tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}};
+#[cfg(target_os = "linux")]
+mod linux_tray;
 use tauri_plugin_dialog::DialogExt;
 
 fn data_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -58,6 +62,34 @@ async fn export_backup(app: tauri::AppHandle, data: String) -> Result<bool, Stri
     }).await.map_err(|e| e.to_string())?
 }
 
+#[cfg(not(target_os = "linux"))]
+struct TrayMenu {
+    open: MenuItem<tauri::Wry>,
+    quit: MenuItem<tauri::Wry>,
+}
+
+fn tray_labels(hebrew: bool) -> (&'static str, &'static str) {
+    if hebrew { ("פתיחת הלוח", "יציאה") } else { ("Open Luach+", "Quit") }
+}
+
+#[tauri::command]
+async fn set_tray_language(app: tauri::AppHandle, language: String) -> Result<(), String> {
+    if language != "he" && language != "en" { return Err("Unsupported language".into()); }
+    tauri::async_runtime::spawn_blocking(move || {
+        #[cfg(target_os = "linux")]
+        if let Some(tray) = app.try_state::<ksni::blocking::Handle<linux_tray::LinuxTray>>() {
+            tray.update(|tray| tray.hebrew = language == "he");
+        }
+        #[cfg(not(target_os = "linux"))]
+        if let Some(menu) = app.try_state::<TrayMenu>() {
+            let (open, quit) = tray_labels(language == "he");
+            menu.open.set_text(open).map_err(|e| e.to_string())?;
+            menu.quit.set_text(quit).map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }).await.map_err(|e| e.to_string())?
+}
+
 fn show_main(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -70,28 +102,35 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![load_data, save_data, print_window, export_backup])
+        .invoke_handler(tauri::generate_handler![load_data, save_data, print_window, export_backup, set_tray_language])
         .setup(|app| {
-            let open = MenuItem::with_id(app, "open", "Open Luach+ / פתיחת הלוח", true, None::<&str>)?;
-            let quit = MenuItem::with_id(app, "quit", "Quit / יציאה", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&open, &quit])?;
-            let mut tray = TrayIconBuilder::new()
-                .menu(&menu)
-                .tooltip("Luach+ · close to tray; reminders remain active")
-                .show_menu_on_left_click(false)
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "open" => show_main(app),
-                    "quit" => app.exit(0),
-                    _ => {}
-                })
-                .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
-                        show_main(tray.app_handle());
-                    }
-                });
-            if let Some(icon) = app.default_window_icon() { tray = tray.icon(icon.clone()); }
+            #[cfg(target_os = "linux")]
+            let tray_ready = linux_tray::setup(app);
+            #[cfg(not(target_os = "linux"))]
+            let tray_ready = {
+                let open = MenuItem::with_id(app, "open", "Open Luach+", true, None::<&str>)?;
+                let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+                let menu = Menu::with_items(app, &[&open, &quit])?;
+                app.manage(TrayMenu { open, quit });
+                let mut tray = TrayIconBuilder::new()
+                    .menu(&menu)
+                    .tooltip("Luach+")
+                    .show_menu_on_left_click(false)
+                    .on_menu_event(|app, event| match event.id.as_ref() {
+                        "open" => show_main(app),
+                        "quit" => app.exit(0),
+                        _ => {}
+                    })
+                    .on_tray_icon_event(|tray, event| {
+                        if matches!(event, TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } | TrayIconEvent::DoubleClick { button: MouseButton::Left, .. }) {
+                            show_main(tray.app_handle());
+                        }
+                    });
+                if let Some(icon) = app.default_window_icon() { tray = tray.icon(icon.clone()); }
+                tray.build(app).is_ok()
+            };
             // If tray creation fails, keep ordinary close behavior so the window cannot be stranded.
-            if tray.build(app).is_ok() {
+            if tray_ready {
                 let window = app.get_webview_window("main").unwrap();
                 let handle = window.clone();
                 window.on_window_event(move |event| {

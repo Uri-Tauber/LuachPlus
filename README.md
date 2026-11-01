@@ -38,6 +38,21 @@ builds for all three systems. Each release identifies the commit it contains.
 whether zmanim show seconds. The calendar fits the window; scroll inside the
 day panel to see longer schedules.
 
+## Keyboard navigation
+
+Tab to the selected calendar date. Left/Right moves one day (mirrored in RTL),
+Up/Down moves one week, Home/End selects the first/last day of the week, and
+Page Up/Down moves one month. Add Shift for a year jump.
+
+With the calendar focused, use T for today, C for a new event, D/W/M/A for
+views, N/P for the next/previous period, G to enter a date, and S for settings.
+Press ? or select the keyboard button to see the shortcuts. Shortcuts leave
+text fields and dialogs alone; Escape closes dialogs.
+
+These follow familiar patterns from
+[Google Calendar](https://support.google.com/calendar/answer/37034) and
+[Outlook](https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd).
+
 ## Events and reminders
 
 Events can last all day, have start/end times, or span several days. End dates
@@ -47,7 +62,10 @@ whole series.
 Changing location does not move your events or change their clock times.
 Reminders use your computer's local clock and require Luach+ to stay running.
 All-day reminders use 09:00. Closing the desktop window keeps the app in the
-system tray when available; use the tray's **Quit** command to exit.
+system tray when available. Its menu follows the app language. Click or double-click
+the icon to reopen the window on Windows; click it on macOS or Linux. Linux uses
+[StatusNotifierItem activation](https://docs.rs/ksni/latest/ksni/trait.Tray.html#method.activate)
+for a single-click action, with Open also available in the tray menu. Use the tray's **Quit** command to exit.
 
 ## Back up and print
 
@@ -98,4 +116,5 @@ the numerical definitions and upstream comparison setup.
 
 ## License
 
-AGPLv3. See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY.md).
+Application code is AGPLv3. The application icon retains its separate Flaticon
+license and attribution. See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY.md).

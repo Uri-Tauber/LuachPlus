@@ -244,3 +244,66 @@ test('all bundled palettes apply and persist with light and dark appearance', as
   await expect(page.locator('[name="theme"]')).toHaveValue('classic');
   await expect(page.locator('[name="palette"]')).toHaveValue('default');
 });
+
+test('keyboard navigation selects dates, crosses months, respects RTL and leaves forms alone', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-05-02');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('.day-select[data-date="2026-05-02"]').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('[name="jump"]')).toHaveValue('2026-05-03');
+  await expect(page.locator('.day-select[data-date="2026-05-03"]')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.locator('[name="jump"]')).toHaveValue('2026-05-10');
+  await page.keyboard.press('End');
+  await expect(page.locator('[name="jump"]')).toHaveValue('2026-05-16');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#period-title')).toContainText('Sivan');
+  await expect(page.locator('.day-select[data-date="2026-05-17"]')).toBeFocused();
+  await page.keyboard.press('PageDown');
+  await expect(page.locator('#period-title')).toContainText('Tammuz');
+  await page.keyboard.press('Shift+PageDown');
+  await expect(page.locator('#period-title')).toContainText('5787');
+  await page.keyboard.press('w');
+  await expect(page.locator('[data-view="timeGridWeek"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('m');
+  await page.keyboard.press('c');
+  await expect(page.locator('#event-dialog')).toBeVisible();
+  await page.locator('[name="title"]').fill('testing');
+  const date = await page.locator('[name="jump"]').inputValue();
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('t');
+  await expect(page.locator('[name="jump"]')).toHaveValue(date);
+  await page.keyboard.press('Escape');
+  await page.locator('#settings').click();
+  await page.locator('[name="language"]').selectOption('he');
+  await page.locator('#settings-form [type="submit"]').click();
+  await page.locator('[name="jump"]').fill('2026-05-02');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('.day-select[data-date="2026-05-02"]').focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('[name="jump"]')).toHaveValue('2026-05-03');
+  await page.keyboard.press('?');
+  await expect(page.getByRole('dialog', { name: 'קיצורי מקלדת' })).toBeVisible();
+});
+
+test('desktop bridge updates tray language at startup and after settings change', async ({ page }) => {
+  await page.addInitScript(() => {
+    const bridge = window as unknown as { isTauri: boolean; __TAURI_INTERNALS__: unknown; trayLanguages: string[] };
+    bridge.isTauri = true;
+    bridge.trayLanguages = [];
+    bridge.__TAURI_INTERNALS__ = { invoke: async (command: string, args: { language?: string }) => {
+      if (command === 'set_tray_language') bridge.trayLanguages.push(args.language!);
+      return null;
+    } };
+  });
+  await page.goto('/');
+  const languages = () => page.evaluate(() => (window as unknown as { trayLanguages: string[] }).trayLanguages);
+  await expect.poll(languages).toEqual(['en']);
+  await page.locator('#settings').click();
+  await page.locator('[name="language"]').selectOption('he');
+  await page.locator('#settings-form [type="submit"]').click();
+  await expect.poll(languages).toEqual(['en', 'he']);
+  await page.locator('#next').click();
+  expect(await languages()).toEqual(['en', 'he']);
+});

@@ -26,6 +26,7 @@ let anchor = selected;
 let view = 'month';
 let calendar: Calendar | undefined;
 let busy = false;
+let trayLanguage = '';
 const t = (en: string, he: string) => data.settings.language === 'he' ? he : en;
 const escape = (value: unknown): string => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const $ = <T extends HTMLElement = HTMLElement>(selector: string, scope: ParentNode = document): T => scope.querySelector<T>(selector)!;
@@ -71,6 +72,10 @@ function colorScheme(): 'light' | 'dark' {
 function configureAppearance() {
   const s = data.settings, html = document.documentElement;
   applyPalette(s.theme, s.palette);
+  if (isTauri() && trayLanguage !== s.language) {
+    trayLanguage = s.language;
+    void invoke('set_tray_language', { language: s.language }).catch(() => { trayLanguage = ''; });
+  }
   html.lang = s.language;
   html.dir = s.direction === 'auto' ? (s.language === 'he' ? 'rtl' : 'ltr') : s.direction;
   html.dataset.colorScheme = colorScheme();
@@ -86,7 +91,7 @@ function dayCell(info: DayCellInfo) {
   const hd = s.language === 'he' ? f.formatHebrewNumber(h.day) : `${h.day}`;
   const primary = s.calendar === 'hebrew' ? hd : String(civil(date).day);
   const secondary = s.calendar === 'hebrew' ? civil(date).toFormat('d') : `${hd} ${f.formatMonth(calendarDay(date))}`;
-  return { html: `<div class="day-content"><div class="day-heading"><button class="day-select" data-date="${date}" aria-label="${escape(hebrewLabel(date, s.language))}">${escape(primary)}</button><span class="secondary-date">${escape(secondary)}</span></div>
+  return { html: `<div class="day-content"><div class="day-heading"><button class="day-select" tabindex="${date === selected ? 0 : -1}" aria-pressed="${date === selected}" data-date="${date}" aria-label="${escape([civil(date).setLocale(s.language).toLocaleString({ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), hebrewLabel(date, s.language), facts.holiday, facts.parasha, facts.omer].filter(Boolean).join(' · '))}">${escape(primary)}</button><span class="secondary-date">${escape(secondary)}</span></div>
     <div class="day-facts">${[facts.holiday, facts.parasha, facts.omer].filter(Boolean).map(v => `<span title="${escape(v)}">${escape(v)}</span>`).join('')}</div></div>` };
 }
 
@@ -96,7 +101,7 @@ function render() {
   root.innerHTML = `
     <header class="app-header">
       <div class="identity"><h1>Luach<span>+</span></h1><div id="live-date"></div></div>
-      <div class="app-actions"><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button>${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}</div>
+      <div class="app-actions"><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button>${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}</div>
     </header>
     <div id="status" role="status" aria-live="polite"></div>
     <main class="workspace">
@@ -155,8 +160,11 @@ function render() {
   };
   calendar = new Calendar($('#calendar'), options);
   calendar.render();
+  $('#calendar').tabIndex = document.querySelector('.day-select[tabindex="0"]') ? -1 : 0;
+  $('#calendar').onfocus = () => { if (!document.querySelector('.day-select[tabindex="0"]')) selectDay(anchor); };
   $('#add-event').onclick = () => openEvent(newEvent(selected));
   $('#settings').onclick = () => openSettings();
+  $('#keyboard-help').onclick = openKeyboardHelp;
   $('#about').onclick = () => openAbout();
   $('#print').onclick = () => void printCalendar();
   $('#today').onclick = () => { anchor = selected = DateTime.local().toISODate(); render(); };
@@ -195,7 +203,49 @@ function selectDay(date: string) {
   document.querySelectorAll('.selected-day').forEach(el => el.classList.remove('selected-day'));
   document.querySelectorAll(`[data-date="${date}"]`).forEach(el => { const cell = el.closest('td'); if (cell) cell.classList.add('selected-day'); });
   $<HTMLInputElement>('[name="jump"]').value = date;
+  document.querySelectorAll<HTMLButtonElement>('.day-select').forEach(button => {
+    const active = button.dataset.date === selected;
+    button.tabIndex = active ? 0 : -1;
+    button.setAttribute('aria-pressed', String(active));
+  });
   renderPanel();
+}
+function focusDate(date: string) {
+  if (date < '1900-01-01' || date > '2200-12-31') return;
+  const range = monthRange(anchor, data.settings.calendar);
+  if (view !== 'month' || date < range.start || date >= range.end) { anchor = date; selected = date; render(); }
+  else selectDay(date);
+  ($<HTMLButtonElement>(`.day-select[data-date="${date}"]`) ?? $('#calendar')).focus({ preventScroll: true });
+}
+function calendarKeys(event: KeyboardEvent) {
+  const target = event.target as HTMLElement;
+  if (event.defaultPrevented || event.isComposing || target.closest('dialog, input, textarea, select, [contenteditable="true"]') || event.altKey || event.ctrlKey || event.metaKey) return;
+  // Letter shortcuts belong to the focused calendar, leaving other controls' keys intact.
+  const inCalendar = !!target.closest('#calendar');
+  const key = event.key, rtl = document.documentElement.dir === 'rtl';
+  let date: string | undefined;
+  if (key.startsWith('Arrow')) {
+    const delta: Record<string, number> = { ArrowLeft: rtl ? 1 : -1, ArrowRight: rtl ? -1 : 1, ArrowUp: -7, ArrowDown: 7 };
+    if (key in delta) date = addDays(selected, delta[key]);
+  } else if (inCalendar && (key === 'PageUp' || key === 'PageDown')) {
+    date = (event.shiftKey ? shiftYear : shiftMonth)(selected, key === 'PageUp' ? -1 : 1, data.settings.calendar);
+  } else if (inCalendar && (key === 'Home' || key === 'End')) {
+    const weekday = civil(selected).weekday % 7;
+    date = addDays(selected, (key === 'Home' ? 0 : 6) - weekday);
+  } else if (inCalendar) {
+    const views: Record<string, string> = { d: 'timeGridDay', '1': 'timeGridDay', w: 'timeGridWeek', '2': 'timeGridWeek', m: 'month', '3': 'month', a: 'listWeek', '5': 'listWeek' };
+    const letter = key.toLowerCase();
+    if (views[letter]) { view = views[letter]; anchor = selected; render(); focusDate(selected); }
+    else if (letter === 't') focusDate(DateTime.local().toISODate());
+    else if (letter === 'c') openEvent(newEvent(selected));
+    else if (letter === 'g') $('[name="jump"]').focus();
+    else if (letter === 's') openSettings();
+    else if (letter === 'n' || letter === 'j' || letter === 'p' || letter === 'k') { navigate(letter === 'n' || letter === 'j' ? 1 : -1); $('#calendar').focus(); }
+    else if (key === '?') openKeyboardHelp();
+    else return;
+    event.preventDefault(); return;
+  }
+  if (date) { event.preventDefault(); focusDate(date); }
 }
 function updateHeader() {
   const date = currentHebrewCivilDate(DateTime.local(), data.settings);
@@ -434,13 +484,29 @@ function openSettings(tab = 'display') {
   activate(tab); decorateActions(dialog); dialog.showModal();
 }
 
+function openKeyboardHelp() {
+  const dialog = $<HTMLDialogElement>('#about-dialog');
+  const rows = [
+    ['← / →', t('Previous / next day (mirrored in Hebrew)', 'יום קודם / הבא (לפי כיוון הלוח)')],
+    ['↑ / ↓', t('One week back / forward', 'שבוע אחורה / קדימה')],
+    ['Page Up / Page Down', t('Previous / next month', 'חודש קודם / הבא')],
+    ['Shift + Page Up / Page Down', t('Previous / next year', 'שנה קודמת / הבאה')],
+    ['Home / End', t('First / last day of the week', 'יום ראשון / אחרון בשבוע')],
+    ['T', t('Today', 'היום')], ['C', t('New event', 'אירוע חדש')],
+    ['D / W / M / A', t('Day / week / month / agenda', 'יום / שבוע / חודש / סדר יום')],
+    ['N / P', t('Next / previous period', 'תקופה הבאה / קודמת')],
+    ['G', t('Go to date', 'מעבר לתאריך')], ['S', t('Settings', 'הגדרות')], ['?', t('Keyboard shortcuts', 'קיצורי מקלדת')],
+  ];
+  dialog.innerHTML = `<div class="dialog-heading"><h2 id="about-title">${t('Keyboard shortcuts', 'קיצורי מקלדת')}</h2><button class="close-dialog">${t('Close', 'סגירה')}</button></div><p>${t('Tab to the selected date to use these shortcuts. Escape closes dialogs.', 'עברו עם Tab לתאריך הנבחר כדי להשתמש בקיצורים. Escape סוגר חלונות.')}</p><dl class="schedule">${rows.map(([key, label]) => `<div class="schedule-row"><dt>${label}</dt><dd dir="ltr"><kbd>${key}</kbd></dd></div>`).join('')}</dl>`;
+  $('.close-dialog', dialog).onclick = () => dialog.close(); decorateActions(dialog); dialog.showModal();
+}
 function openAbout() {
   const dialog = $<HTMLDialogElement>('#about-dialog');
   dialog.innerHTML = `<div class="dialog-heading"><h2 id="about-title">${t('About Luach+', 'אודות Luach+')}</h2><button id="close-about">${t('Close', 'סגירה')}</button></div>
     <p>${t('Free Hebrew calendar · AGPLv3', 'לוח שנה עברי חופשי · AGPLv3')}</p>
     <p>${t('Zmanim use your saved location and timezone. Choose which times and opinions to display in Settings.', 'זמני היום מחושבים לפי המיקום ואזור הזמן שהגדרתם. ניתן לבחור את הזמנים והשיטות בהגדרות.')}</p>
     <p>${t('Minutes round to the nearest minute. Enable seconds for the calculated clock time.', 'הדקות מעוגלות לדקה הקרובה. הצגת שניות מאפשרת לראות את שעת החישוב.')}</p>
-    <h3>${t('Credits', 'תודות')}</h3><p>FullCalendar · KosherZmanim · Tauri · Luxon</p><p>${t('Location data: MyZman (LGPL-2.1). Candle-lighting customs: ItimHebrewCalendar.', 'נתוני מיקום: MyZman ‏(LGPL-2.1). מנהגי הדלקת נרות: ItimHebrewCalendar.')}</p>`;
+    <h3>${t('Credits', 'תודות')}</h3><p>FullCalendar · KosherZmanim · Tauri · Luxon</p><p>${t('Application icon designed by', 'סמל היישום עוצב על ידי')} <a href="https://www.flaticon.com/free-icon/schedule_3652267" target="_blank" rel="noopener noreferrer">Freepik · Flaticon</a></p><p>${t('Location data: MyZman (LGPL-2.1). Candle-lighting customs: ItimHebrewCalendar.', 'נתוני מיקום: MyZman ‏(LGPL-2.1). מנהגי הדלקת נרות: ItimHebrewCalendar.')}</p>`;
   $('#close-about').onclick = () => dialog.close(); decorateActions(dialog); dialog.showModal();
 }
 async function printCalendar() {
@@ -483,6 +549,7 @@ async function start() {
     return;
   }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (data.settings.colorScheme === 'system') render(); });
+  document.addEventListener('keydown', calendarKeys);
   window.addEventListener('beforeprint', () => calendar?.setOption('height', 'auto'));
   window.addEventListener('afterprint', () => calendar?.setOption('height', '100%'));
   setInterval(() => { updateHeader(); void checkReminders(); }, 1000);
