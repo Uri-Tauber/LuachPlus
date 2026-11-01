@@ -1,0 +1,46 @@
+name: Publish release
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: luach-plus-*
+          path: release-assets
+      - name: Publish installers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mapfile -d '' assets < <(find release-assets -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) -print0)
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo 'No installers were produced.' >&2
+            exit 1
+          fi
+          tag="main-${GITHUB_SHA}"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            gh release upload "$tag" "${assets[@]}" --clobber
+          else
+            cat > release-notes.md <<'NOTES'
+          Download the installer for your operating system:
+
+          - Windows: `.exe`
+          - macOS: `.dmg`
+          - Linux: `.AppImage` or `.deb`
+
+          For AppImage, make the downloaded file executable before opening it.
+          NOTES
+            gh release create "$tag" "${assets[@]}" \
+              --target "$GITHUB_SHA" \
+              --title "Luach+ — build ${GITHUB_RUN_NUMBER}" \
+              --notes-file release-notes.md
+          fi

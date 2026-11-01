@@ -68,3 +68,10 @@ jobs:
         with:
           name: luach-plus-${{ runner.os }}
           path: src-tauri/target/release/bundle/
+
+  release:
+    needs: [web, desktop]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
