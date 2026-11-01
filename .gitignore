@@ -6,10 +6,11 @@ playwright-report/
 .impeccable/review/
 *.log
 
-# Agent working context; user-facing SPEC.md and README.md are tracked.
+# Agent working context.
 AGENTS.md
 CLAUDE.md
 PRODUCT.md
 DESIGN.md
 PLAN.md
+SPEC.md
 .impeccable/
