@@ -25,10 +25,13 @@ const terms: [string, string, string][] = [
   ['SofZmanAchilasChametz', 'Latest chametz meal', 'סוף זמן אכילת חמץ'],
   ['SofZmanBiurChametz', 'Chametz disposal', 'סוף זמן ביעור חמץ'],
   ['SofZmanShma', 'Latest Shema', 'סוף זמן קריאת שמע'],
+  ['SofZmanTfilah', 'Latest Shacharit', 'סוף זמן תפילה'],
   ['SofZmanTfila', 'Latest Shacharit', 'סוף זמן תפילה'],
   ['SamuchLeMinchaKetana', 'Before mincha ketana', 'סמוך למנחה קטנה'],
   ['MinchaGedola', 'Mincha gedola', 'מנחה גדולה'], ['MinchaKetana', 'Mincha ketana', 'מנחה קטנה'],
   ['PlagHamincha', 'Plag hamincha', 'פלג המנחה'], ['Misheyakir', 'Tallit and tefillin', 'זמן טלית ותפילין'],
+  ['Plag', 'Plag hamincha', 'פלג המנחה'],
+  ['BainHashmashos', 'Twilight', 'בין השמשות'], ['BainHasmashos', 'Twilight', 'בין השמשות'],
   ['Alos', 'Dawn', 'עלות השחר'], ['Tzais', 'Nightfall', 'צאת הכוכבים'],
   ['SeaLevelSunrise', 'Sea-level sunrise', 'הנץ במישור'], ['SeaLevelSunset', 'Sea-level sunset', 'שקיעה במישור'],
   ['Sunrise', 'Sunrise', 'הנץ החמה'], ['Sunset', 'Sunset', 'שקיעת החמה'],
@@ -43,18 +46,24 @@ const terms: [string, string, string][] = [
 ];
 export function zmanLabel(method: string, language: Language): string {
   if (itimMethods[method]) return itimMethods[method][language];
+  if (method === 'getSofZmanTfilaFixedLocal') return language === 'he' ? 'סוף זמן תפילה · שעתיים לפני חצות מקומי קבוע' : 'Latest Shacharit · 2 hours before fixed local noon';
+  if (method === 'getSofZmanShmaFixedLocal') return language === 'he' ? 'סוף זמן קריאת שמע · 3 שעות לפני חצות מקומי קבוע' : 'Latest Shema · 3 hours before fixed local noon';
   const base = method.replace(/^get/, '');
   const term = terms.find(([key]) => base.startsWith(key));
   if (!term) return base.replace(/([a-z])([A-Z])/g, '$1 $2');
   const suffix = base.slice(term[0].length).replace(/(\d+)Point(\d+)/g, '$1.$2').replace(/point/g, '.')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/([a-z\d])([A-Z])/g, '$1 $2').replace(/GRA/g, language === 'he' ? 'גר״א' : 'GRA')
     .replace(/MGA/g, language === 'he' ? 'מג״א' : 'MGA').replace(/Degrees/g, '°')
     .replace(/Minutes/g, language === 'he' ? 'דקות' : 'min').replace(/Zmanis/g, language === 'he' ? 'זמניות' : 'seasonal')
     .replace(/Baal Hatanya/g, language === 'he' ? 'בעל התניא' : 'Baal Hatanya');
   const translated = language === 'he' ? suffix.replace(/Geonim/g, 'גאונים').replace(/Ateret Torah/g, 'עטרת תורה')
-    .replace(/Ahavat Shalom/g, 'אהבת שלום').replace(/Fixed Local Chatzos/g, 'חצות מקומי קבוע')
+    .replace(/Ahavat Shalom/g, 'אהבת שלום').replace(/Fixed Local Chatzos/g, 'חצות מקומי קבוע').replace(/Fixed Local/g, 'לפי חצות מקומי קבוע')
     .replace(/Greater Than/g, 'המאוחר מבין').replace(/Half Day/g, 'חצי היום').replace(/To Sunset/g, 'עד השקיעה')
-    .replace(/To/g, 'עד').replace(/Before Chatzos/g, 'לפני חצות').replace(/Hours/g, 'שעות').replace(/Hashachar/g, '') : suffix;
+    .replace(/Before Chatzos/g, 'לפני חצות').replace(/Chatzos/g, 'חצות').replace(/Sunrise/g, 'הנץ').replace(/Sunset/g, 'שקיעה')
+    .replace(/Tzais/g, 'צאת הכוכבים').replace(/Alos/g, 'עלות השחר').replace(/Kol Eliyahu/g, 'קול אליהו')
+    .replace(/Yereim/g, 'יראים').replace(/RT/g, 'רבנו תם').replace(/Stars/g, 'כוכבים').replace(/Days/g, 'ימים')
+    .replace(/\bTo\b/g, 'עד').replace(/\bAs\b/g, 'לפי').replace(/Before/g, 'לפני').replace(/Hours/g, 'שעות').replace(/Hashachar/g, '') : suffix;
   return `${term[language === 'he' ? 2 : 1]}${translated ? ` · ${translated}` : ''}`;
 }
 export function makeZmanCalendar(date: string, settings: ZmanSettings): ComplexZmanimCalendar {

@@ -1,14 +1,13 @@
 # Calculation references
 
-The app pins KosherZmanim 0.9.0 and compares it with KosherJava 2.5.0 commit
-`04dc83975db43582414d8639e0e204d9681aa6f0`, not current Java master.
+The app uses KosherZmanim 0.9.0, verified against KosherJava 2.5.0 commit
+`04dc83975db43582414d8639e0e204d9681aa6f0`.
 NOAA is used throughout. Full calculation precision is retained; minute-only
 display rounds to the nearest minute, while seconds display truncates subsecond precision.
 
 ## Itim Labina default
 
 Primary reference: [publisher's Emanuel 5786 edition, page 3](https://www.emanuel.muni.il/uploads/n/1758467214.8935.pdf).
-The PDF is a research reference and is not redistributed with this project.
 
 The preset maps dawn A/B to 19.75°/16.02°, misheyakir to 11.5°, MGA 90/72
 to symmetric 19.75°/16.02° days, and stringent Shema to 19.75° dawn through
@@ -17,11 +16,9 @@ later. Mincha gedola uses the later of half a seasonal hour or thirty minutes
 after that midpoint. Shabbos ends at 8.5°, fasts at 6.45°, and Chazon Ish
 nightfall at 9.28°. GRA methods use the library's sunrise/sunset day.
 
-These definitions call library primitives; they do not reproduce terrain
-visibility. The printed edition uses location-specific horizons and elevations.
-The app's sunrise is astronomical, and its elevation policy is explicitly
-configurable. Printed half-minute markers and historical rounding are not
-reproduced. Do not describe this as exact published-calendar parity.
+Sunrise and sunset use an astronomical horizon with configurable elevation.
+Local terrain and the printed edition's half-minute markers are not included
+in these calculations.
 
 ## Upstream corrections
 
@@ -34,9 +31,8 @@ package's CommonJS and ES-module builds on installation:
 2. Mincha Gedola Ahavat Shalom compared an unavailable-hour sentinel with `NaN`
    using equality, returning a result where Java returned null at high latitudes.
 
-The patch script refuses an unreviewed dependency version or source mismatch.
-Both changes are exercised by the Java comparison. Remove patches when a new
-upstream release includes and passes the same corrections.
+The installation script checks the dependency version and source before applying
+either correction. Both are covered by the Java comparison.
 
 ## Special days
 

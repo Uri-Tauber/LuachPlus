@@ -17,10 +17,10 @@ test('Hebrew month boundaries, navigation, Gregorian switch and all views', asyn
   await expect(page.locator('#period-title')).toContainText('Nissan');
   await page.locator('#prev').click();
   await expect(page.locator('#period-title')).toContainText('Adar II');
-  await page.locator('[name="calendar-system"]').selectOption('gregorian');
+  await page.locator('[data-system="gregorian"]').click();
   await expect(page.locator('#period-title')).toContainText('March');
   for (const view of ['timeGridWeek', 'timeGridDay', 'listWeek', 'month']) {
-    await page.locator('[name="view"]').selectOption(view);
+    await page.locator(`[data-view="${view}"]`).click();
     await expect(page.locator('#calendar')).not.toBeEmpty();
   }
   expect(errors).toEqual([]);
@@ -40,11 +40,14 @@ test('event create, whole-series edit and delete persist; location does not chan
   await form.locator('[type="submit"]').click();
   await expect(page.locator('#event-dialog')).not.toBeVisible();
   await expect(page.locator('.panel-events')).toContainText('Weekly appointment');
+  await expect(page.locator('#status')).toHaveText('Event saved');
+  await expect(page.locator('.app-footer')).toBeInViewport();
   await page.reload();
   await page.locator('[name="jump"]').fill('2026-11-01');
   await page.locator('[name="jump"]').dispatchEvent('change');
   await page.locator('#settings').click();
   await page.locator('[data-tab="location"]').click();
+  await page.locator('#toggle-location-search').click();
   await page.locator('#location-search').fill('New York');
   await page.locator('#location-presets').selectOption({ label: 'New York, United States' });
   await page.locator('#settings-form [type="submit"]').click();
@@ -99,6 +102,9 @@ test('backup export, validated restore and print schedule include complete conte
   await expect(page.locator('#day-panel')).toBeVisible();
   await expect(page.locator('.app-actions')).not.toBeVisible();
   await page.pdf({ path: 'test-results/calendar.pdf', printBackground: true, preferCSSPageSize: true });
+  await page.emulateMedia({ media: 'screen' });
+  await expect(page.locator('.app-footer')).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(1000);
 });
 
 test('mobile layout and Hebrew RTL remain within the viewport', async ({ page }) => {
@@ -129,4 +135,112 @@ test('hidden invalid fields do not strand Save and dialogs have accessible names
   await page.locator('#settings-form [type="submit"]').click();
   await expect(page.locator('[name="locationName"]')).toBeVisible();
   await expect(page.locator('[name="locationName"]')).toBeFocused();
+});
+
+test('the app fits resized windows in both languages and every view', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-05-02');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  for (const language of ['en', 'he']) {
+    if (language === 'he') {
+      await page.locator('#settings').click();
+      await page.locator('[name="language"]').selectOption(language);
+      await page.locator('#settings-form [type="submit"]').click();
+    }
+    for (const [width, height] of [[1440, 900], [1280, 720], [800, 600], [390, 844]]) {
+      await page.setViewportSize({ width, height });
+      for (const view of ['month', 'timeGridWeek', 'timeGridDay', 'listWeek']) {
+        await page.locator(`[data-view="${view}"]`).click();
+        await expect.poll(() => page.evaluate(currentView => {
+          const within = (selector: string) => {
+            const rect = document.querySelector(selector)!.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.left >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1;
+          };
+          const calendar = document.querySelector('#calendar')!.getBoundingClientRect();
+          const datesFit = currentView !== 'month' || [...document.querySelectorAll('#calendar .day-select')].every(button => {
+            const r = button.getBoundingClientRect();
+            return r.top >= calendar.top && r.bottom <= calendar.bottom && r.left >= calendar.left && r.right <= calendar.right;
+          });
+          return datesFit && document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth &&
+            ['.app-header', '.calendar-controls', '.jump-date', '#calendar', '#day-panel', '.app-footer'].every(within);
+        }, view)).toBe(true);
+      }
+    }
+  }
+});
+
+test('long schedules scroll inside the day panel and labels contain no developer markers', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/');
+  await page.locator('#configure-zmanim').click();
+  await expect(page.locator('#settings-zmanim')).not.toContainText(/Itim|inspired|get[A-Z]/);
+  await page.locator('[name="zman"]').evaluateAll(inputs => inputs.forEach(input => (input as HTMLInputElement).checked = true));
+  await page.locator('#settings-form [type="submit"]').click();
+  expect(await page.locator('.schedule-row').count()).toBeGreaterThan(100);
+  await expect(page.locator('.schedule')).not.toContainText('Itim');
+  await page.locator('#day-panel').evaluate(panel => { panel.scrollTop = panel.scrollHeight; });
+  await expect(page.locator('.panel-note')).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(720);
+  await page.locator('#about').click();
+  await expect(page.locator('#about-dialog')).not.toContainText(/not.*verified|No exact|legacy|get[A-Z]/);
+});
+
+test('year arrows, selected view switches and calendar facts work', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-05-02');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  const facts = page.locator('.day-content').filter({ has: page.locator('[data-date="2026-05-02"]') }).locator('.day-facts');
+  await expect(facts).toContainText('Emor');
+  await expect(facts).toContainText('Omer');
+  await expect(facts).toBeInViewport({ ratio: 1 });
+  await expect(page.locator('[data-view="month"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#next-year').click();
+  await expect(page.locator('#period-title')).toContainText('5787');
+  await page.locator('#prev-year').click();
+  await expect(page.locator('#period-title')).toContainText('5786');
+  await page.locator('[data-system="gregorian"]').click();
+  await page.locator('#next-year').click();
+  await expect(page.locator('#period-title')).toContainText('2027');
+  await page.locator('#settings').click();
+  await page.locator('[data-tab="location"]').click();
+  await expect(page.locator('#location-search')).not.toBeVisible();
+  await page.locator('#toggle-location-search').click();
+  await expect(page.locator('#location-search')).toBeFocused();
+  await page.locator('#toggle-location-search').click();
+  await expect(page.locator('#location-search')).not.toBeVisible();
+});
+
+test('all bundled palettes apply and persist with light and dark appearance', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-05-02');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  const palettes: Record<string, string[]> = {
+    forma: ['blue', 'green', 'purple', 'red'], monarch: ['purple', 'blue', 'green', 'red', 'yellow'],
+    breezy: ['indigo', 'amber', 'emerald', 'rose'], pulse: ['red', 'blue', 'green', 'purple'], classic: ['default'],
+  };
+  for (const [theme, colors] of Object.entries(palettes)) {
+    for (const palette of colors) {
+      await page.locator('#settings').click();
+      await page.locator('[name="theme"]').selectOption(theme);
+      await expect(page.locator('[name="palette"] option')).toHaveCount(colors.length);
+      await page.locator('[name="palette"]').selectOption(palette);
+      await page.locator('[name="colorScheme"]').selectOption('dark');
+      await page.locator('#settings-form [type="submit"]').click();
+      const facts = page.locator('.day-content').filter({ has: page.locator('[data-date="2026-05-02"]') }).locator('.day-facts');
+      await expect(facts).toBeInViewport({ ratio: 1 });
+      const css = await page.locator('#theme-palette').textContent();
+      expect(css).toContain(`--fc-${theme}-primary`);
+      expect(css).toContain('data-color-scheme=dark');
+      const dark = await page.locator('body').evaluate(el => getComputedStyle(el).color);
+      await page.locator('#settings').click();
+      await expect(page.locator('[name="palette"]')).toHaveValue(palette);
+      await page.locator('[name="colorScheme"]').selectOption('light');
+      await page.locator('#settings-form [type="submit"]').click();
+      expect(await page.locator('body').evaluate(el => getComputedStyle(el).color)).not.toBe(dark);
+    }
+  }
+  await page.reload();
+  await page.locator('#settings').click();
+  await expect(page.locator('[name="theme"]')).toHaveValue('classic');
+  await expect(page.locator('[name="palette"]')).toHaveValue('default');
 });

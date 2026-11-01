@@ -14,10 +14,20 @@
 }
 [data-color-scheme="dark"] { color-scheme: dark; }
 * { box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
 body { margin: 0; min-width: 340px; }
+#app { height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: hidden; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button, select, input, textarea { border: 1px solid var(--app-border); border-radius: 5px; background: var(--app-background); }
-button { min-height: 36px; padding: 7px 13px; cursor: pointer; }
+button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 7px 13px; cursor: pointer; }
+.icon { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
+.icon-button { min-width: 36px; padding: 7px; }
+[dir="rtl"] .directional { transform: scaleX(-1); }
+.segmented { display: inline-flex; border: 1px solid var(--app-border); border-radius: 6px; overflow: hidden; }
+.segmented button { border: 0; border-radius: 0; padding-inline: 10px; }
+.segmented button + button { border-inline-start: 1px solid var(--app-border); }
+.segmented [aria-pressed="true"] { background: var(--app-primary); color: var(--app-contrast); }
+.segmented :focus-visible { outline-offset: -3px; }
 button:hover { background: var(--app-muted); }
 button:disabled { opacity: .55; cursor: wait; }
 button.primary { background: var(--app-primary); color: var(--app-contrast); border-color: transparent; }
@@ -42,30 +52,34 @@ p { line-height: 1.6; }
 .identity h1 { font-size: 1.8rem; font-weight: 650; letter-spacing: -.03em; direction: ltr; }
 .identity h1 span { color: var(--app-primary); }
 #live-date { font-size: 1.05rem; }
-.app-actions, .navigation, .view-controls { display: flex; gap: 8px; }
+.app-actions, .navigation, .view-controls { display: flex; align-items: center; gap: 8px; }
+.navigation { gap: 4px; }
+.view-controls { flex-wrap: wrap; }
 #status { padding-inline: 28px; line-height: 1.6; }
 #status:not(:empty) { padding-block: 10px; border-bottom: 1px solid var(--app-border); }
 .error, .form-error { color: #b42318; }
 [data-color-scheme="dark"] .error, [data-color-scheme="dark"] .form-error { color: #ffb4ab; }
-.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: calc(100vh - 145px); }
-.calendar-section { min-width: 0; padding: 24px; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: 0; overflow: hidden; }
+.calendar-section { display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-width: 0; min-height: 0; padding: 24px; }
 .calendar-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
 .calendar-controls h2 { text-align: center; }
 .jump-date { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-block: 8px 16px; }
 .jump-date .field { display: flex; flex-direction: row; align-items: center; margin: 0; gap: 10px; }
 .jump-date input { width: 155px; }
 #secondary-title { font-size: .9rem; }
-#calendar { width: 100%; }
-.luach-cell-inner { display: block; width: 100%; min-width: 0; }
+#calendar { width: 100%; min-width: 0; min-height: 0; container-type: size; }
+.luach-cell-top { min-width: 0; min-height: 0; flex-shrink: 0; height: auto; align-items: flex-start; }
+.luach-cell-inner { display: block; width: 100%; min-width: 0; height: auto !important; }
 .day-content { width: 100%; min-width: 0; }
 .day-heading { display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; }
 .day-select { min-width: 30px; min-height: 30px; padding: 3px 6px; border: 0; background: transparent; font-size: 1rem; font-weight: 650; }
 .secondary-date { font-size: .78rem; }
 .day-facts { display: flex; flex-direction: column; gap: 3px; font-size: .75rem; line-height: 1.4; padding: 2px 5px 5px; width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.day-facts span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .selected-day { background: color-mix(in srgb, var(--app-primary) 10%, var(--app-background)) !important; }
 .holy-day .day-select { color: var(--app-primary); }
 .outside-month .day-heading, .outside-month .day-facts { opacity: .45; }
-#day-panel { padding: 24px 20px; border-inline-start: 1px solid var(--app-border); overflow-wrap: anywhere; }
+#day-panel { min-height: 0; overflow: auto; padding: 24px 20px; border-inline-start: 1px solid var(--app-border); overflow-wrap: anywhere; }
 .panel-heading { padding-bottom: 18px; border-bottom: 1px solid var(--app-border); }
 .panel-heading h2 { font-size: 1.2rem; }
 .panel-heading p { font-size: .9rem; margin-top: 7px; }
@@ -110,8 +124,19 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 #about-dialog li { margin-bottom: 10px; }
 .load-error { max-width: 650px; margin: 10vh auto; padding: 24px; }
 .load-error p { margin-block: 20px; }
+@container (max-height: 480px) {
+  .luach-cell-top { padding: 2px 4px !important; }
+  .luach-cell-inner { padding: 0 !important; }
+  .day-select { min-height: 20px; padding-block: 0; }
+  .day-facts { padding-block: 0; gap: 0; font-size: .65rem; line-height: 1.1; }
+}
 @media (max-width: 1100px) {
-  .calendar-controls h2 { order: -1; width: 100%; text-align: start; }
+  .calendar-controls { gap: 8px; margin-bottom: 8px; }
+  .calendar-controls h2 { order: 0; width: auto; flex: 1; text-align: end; }
+  .navigation { flex: 0 0 auto; }
+  .view-controls { flex: 1 0 100%; }
+  .view-segments .segment-label { display: none; }
+  .jump-date { margin-block: 4px 8px; }
   .calendar-section { padding: 16px; }
   .workspace { grid-template-columns: minmax(0, 1fr) 270px; }
 }
@@ -119,14 +144,17 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
   .app-header { padding: 16px; flex-wrap: wrap; gap: 16px; }
   .identity { width: 100%; justify-content: space-between; gap: 12px; }
   .app-actions { width: 100%; }
-  .workspace { display: block; }
+  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 7fr) minmax(0, 3fr); }
   #day-panel { border-inline-start: 0; border-top: 1px solid var(--app-border); padding: 24px 16px; }
-  .navigation, .view-controls { flex: 1; }
-  .view-controls select { min-width: 0; flex: 1; }
+  .calendar-controls { gap: 8px; }
+  .calendar-controls h2 { order: 0; width: auto; flex: 1; text-align: end; font-size: 1.1rem; }
+  .navigation { flex: 0 0 auto; }
+  .view-controls { flex: 1 0 100%; gap: 4px; }
+  .view-segments .segment-label { display: none; }
+  .segmented button { padding-inline: 6px; }
   .jump-date { flex-wrap: wrap; }
   #calendar { font-size: .8rem; }
   .day-facts { font-size: .65rem; padding-inline: 1px; }
-  .day-facts span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .secondary-date { font-size: .65rem; }
   .day-select { min-width: 24px; padding: 2px; font-size: .9rem; }
   .form-grid { grid-template-columns: 1fr; }
@@ -135,14 +163,17 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 }
 @media print {
   :root { color-scheme: light; }
+  html, body, #app { height: auto; overflow: visible; }
+  #app { display: block; }
   body { color: #111; background: #fff; min-width: 0; }
   .app-actions, #status, .navigation, .view-controls, .jump-date, .app-footer, .quiet, dialog { display: none !important; }
   .app-header { padding: 0 0 14px; }
-  .workspace { display: block; min-height: 0; }
-  .calendar-section { padding: 16px 0; }
+  .workspace { display: block; min-height: 0; overflow: visible; }
+  .calendar-section { display: block; padding: 16px 0; }
+  #calendar { height: auto !important; container-type: normal; }
   .calendar-controls h2 { text-align: start; }
   #day-panel { display: none; }
-  .print-schedule #day-panel { display: block; break-before: page; border: 0; padding: 0; }
+  .print-schedule #day-panel { display: block; height: auto; overflow: visible; break-before: page; border: 0; padding: 0; }
   .schedule-row, .learning > div, .panel-heading { break-inside: avoid; }
   .day-select { padding: 0; min-height: 20px; }
   .selected-day { background: transparent !important; }

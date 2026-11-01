@@ -1,14 +1,16 @@
 import locations from './data/locations.json';
 import { defaultMethods, zmanMethods, type ZmanSettings } from './zmanim';
 import type { CalendarSystem, Language } from './dates';
+import { paletteFor } from './palettes';
 export interface Settings extends ZmanSettings {
   language: Language; direction: 'auto' | 'ltr' | 'rtl'; theme: 'forma' | 'monarch' | 'breezy' | 'pulse' | 'classic';
   colorScheme: 'light' | 'dark' | 'system'; seconds: boolean; calendar: CalendarSystem; printSchedule: boolean;
+  palette?: string;
 }
 export const presets = locations;
 export function defaultSettings(): Settings {
   return { language: navigator.language.startsWith('he') ? 'he' : 'en', direction: 'auto', theme: 'forma',
-    colorScheme: 'system', seconds: false, calendar: 'hebrew', printSchedule: false,
+    palette: 'blue', colorScheme: 'system', seconds: false, calendar: 'hebrew', printSchedule: false,
     location: { ...locations.find(p => p.name === 'Jerusalem')! }, useElevation: false,
     zmanMethods: [...defaultMethods], endMethod: 'getTzaisGeonim8Point5Degrees', fastStartMethod: 'itimDawn72',
     fastEndMethod: 'getTzaisGeonim6Point45Degrees', bavli: true, yerushalmi: false };
@@ -17,6 +19,7 @@ export function validateSettings(s: Settings): void {
   if (!s || typeof s !== 'object' || !['en', 'he'].includes(s.language) || !['auto', 'ltr', 'rtl'].includes(s.direction) ||
     !['forma', 'monarch', 'breezy', 'pulse', 'classic'].includes(s.theme) || !['light', 'dark', 'system'].includes(s.colorScheme) ||
     !['hebrew', 'gregorian'].includes(s.calendar)) throw new Error('Invalid settings');
+  if (s.palette !== undefined && (typeof s.palette !== 'string' || paletteFor(s.theme, s.palette) !== s.palette)) throw new Error('Invalid theme palette');
   for (const key of ['seconds', 'printSchedule', 'useElevation', 'bavli', 'yerushalmi'] as const) if (typeof s[key] !== 'boolean') throw new Error('Invalid display setting');
   const p = s.location;
   if (!p || typeof p.name !== 'string' || !p.name.trim() || p.name.length > 150 ||

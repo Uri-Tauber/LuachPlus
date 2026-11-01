@@ -47,6 +47,14 @@ export function shiftMonth(date: string, amount: number, system: CalendarSystem)
   }
   return result;
 }
+export function shiftYear(date: string, amount: number, system: CalendarSystem): string {
+  if (system === 'gregorian') return iso(civil(date).plus({ years: amount }));
+  const h = hebrew(date), year = h.year + amount;
+  let month = h.month;
+  if (month === 13 && !isLeap(year)) month = 12;
+  else if (month === 12 && !isLeap(h.year) && isLeap(year)) month = 13;
+  return fromHebrew({ year, month, day: Math.min(h.day, daysInHebrewMonth(year, month)) });
+}
 export function formatter(language: Language): HebrewDateFormatter {
   const result = new HebrewDateFormatter();
   result.setHebrewFormat(language === 'he');

@@ -1,13 +1,19 @@
 import { describe, expect, test } from 'vitest';
 import { DateTime } from 'luxon';
-import { addDays, calendarDay, fromHebrew, hebrew, monthRange, shiftMonth } from '../src/dates';
+import { addDays, calendarDay, fromHebrew, hebrew, monthRange, shiftMonth, shiftYear } from '../src/dates';
 import { dueReminders, expandEvents, newEvent, validateEvent } from '../src/events';
 import { defaultSettings, presets, validateSettings } from '../src/settings';
 import { validateData } from '../src/storage';
-import { currentHebrewCivilDate, makeZmanCalendar, schedule } from '../src/zmanim';
+import { currentHebrewCivilDate, makeZmanCalendar, schedule, zmanLabel } from '../src/zmanim';
 import libraryMethods from '../src/data/zman-methods.json';
 
 describe('calendar boundaries', () => {
+  test('year jumps preserve named Hebrew months and handle missing leap dates', () => {
+    expect(shiftYear('2024-02-29', 1, 'gregorian')).toBe('2025-02-28');
+    expect(hebrew(shiftYear(fromHebrew({ year: 5787, month: 13, day: 15 }), 1, 'hebrew'))).toEqual({ year: 5788, month: 12, day: 15 });
+    expect(hebrew(shiftYear(fromHebrew({ year: 5786, month: 12, day: 15 }), 1, 'hebrew'))).toEqual({ year: 5787, month: 13, day: 15 });
+    expect(hebrew(shiftYear(fromHebrew({ year: 5787, month: 1, day: 15 }), 1, 'hebrew'))).toEqual({ year: 5788, month: 1, day: 15 });
+  });
   test('known new year and reversible conversions across leap Adar', () => {
     expect(fromHebrew({ year: 5786, month: 7, day: 1 })).toBe('2025-09-23');
     for (let date = '2026-01-01'; date < '2029-01-01'; date = addDays(date, 11)) expect(fromHebrew(hebrew(date))).toBe(date);
@@ -65,6 +71,10 @@ describe('whole-series recurrence', () => {
 });
 
 describe('zmanim and settings', () => {
+  test('fixed-local calculation labels are translated', () => {
+    expect(zmanLabel('getSofZmanTfilaFixedLocal', 'he')).toContain('חצות מקומי קבוע');
+    expect(zmanLabel('getSofZmanTfilaFixedLocal', 'he')).not.toMatch(/[a-z]/i);
+  });
   test('all presets and default methods are valid', () => {
     const settings = defaultSettings();
     validateSettings(settings);
