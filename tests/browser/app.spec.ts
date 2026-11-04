@@ -405,3 +405,21 @@ test('overnight event preserves its date range and reminder; invalid collapsed r
   await expect(form.locator('[name="reminder"]')).toBeVisible();
   await expect(form.locator('[name="reminder"]')).toHaveValue('15');
 });
+
+test('Hebrew date jump handles leap Adar and rejects missing days', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#jump-hebrew').click();
+  await page.locator('[name="jumpYear"]').fill('5787');
+  await page.locator('[name="jumpMonth"]').selectOption('13');
+  await page.locator('[name="jumpDay"]').fill('15');
+  await page.locator('#jump-form [type="submit"]').click();
+  await expect(page.locator('#period-title')).toContainText('Adar II');
+  await expect(page.locator('#day-panel h2')).toContainText('15 Adar II');
+  await page.locator('#jump-hebrew').click();
+  await page.locator('[name="jumpDay"]').fill('30');
+  await page.locator('#jump-form [type="submit"]').click();
+  await expect(page.locator('#jump-dialog .form-error')).not.toBeEmpty();
+  await expect(page.locator('#jump-dialog')).toBeVisible();
+  await page.locator('[name="jumpYear"]').fill('5786');
+  await expect(page.locator('[name="jumpMonth"] option[value="13"]')).toHaveCount(0);
+});

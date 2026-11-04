@@ -63,10 +63,10 @@ p { line-height: 1.6; }
 .calendar-section { display: grid; grid-template-rows: auto auto minmax(540px, 1fr); min-width: 0; min-height: 0; overflow: auto; padding: 24px; }
 .calendar-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
 .calendar-controls h2 { text-align: center; }
-.jump-date { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-block: 8px 16px; }
+.jump-date { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-block: 8px 16px; }
 .jump-date .field { display: flex; flex-direction: row; align-items: center; margin: 0; gap: 10px; }
 .jump-date input { width: 155px; }
-#secondary-title { font-size: .9rem; }
+#secondary-title { font-size: .9rem; margin-inline-start: auto; }
 #calendar { width: 100%; min-width: 0; min-height: 0; container-type: size; }
 .luach-cell-top { min-width: 0; min-height: 0; flex-shrink: 0; height: auto; align-items: flex-start; }
 .luach-cell-inner { display: block; width: 100%; min-width: 0; height: auto !important; }

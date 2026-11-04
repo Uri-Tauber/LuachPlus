@@ -8,7 +8,7 @@ import heLocale from 'fullcalendar/locales/he';
 import { DateTime } from 'luxon';
 import { isTauri, invoke } from '@tauri-apps/api/core';
 import { JewishCalendar } from 'kosher-zmanim';
-import { addDays, calendarDay, civil, dayFacts, formatter, fromHebrew, hebrew, hebrewLabel, localDate, monthRange, monthTitle, shiftMonth, shiftYear } from './dates';
+import { addDays, calendarDay, civil, dayFacts, formatter, fromHebrew, hebrew, hebrewLabel, localDate, monthRange, monthTitle, shiftMonth, shiftYear, isLeap } from './dates';
 import { dueReminders, expandEvents, newEvent, validateEvent, type UserEvent } from './events';
 import { presets, validateSettings, type Settings } from './settings';
 import { loadData, saveData, validateData, type AppData } from './storage';
@@ -114,13 +114,13 @@ function render() {
           <h2 id="period-title"></h2>
           <div class="view-controls">${segments('system', t('Calendar', 'לוח שנה'), [['hebrew', t('Hebrew', 'עברי'), 'hebrew'], ['gregorian', t('Gregorian', 'לועזי'), 'gregorian']], data.settings.calendar)}${segments('view', t('Calendar view', 'תצוגת הלוח'), [['month', t('Month', 'חודש'), 'month'], ['timeGridWeek', t('Week', 'שבוע'), 'week'], ['timeGridDay', t('Day', 'יום'), 'day'], ['listWeek', t('Agenda', 'סדר יום'), 'agenda']], view)}</div>
         </div>
-        <div class="jump-date">${field(t('Go to date', 'מעבר לתאריך'), input('jump', selected, 'date', 'min="1900-01-01" max="2200-12-31"'))}<span id="secondary-title"></span></div>
+        <div class="jump-date">${field(t('Go to date', 'מעבר לתאריך'), input('jump', selected, 'date', 'min="1900-01-01" max="2200-12-31"'))}<button id="jump-hebrew">${t('Hebrew date…', 'תאריך עברי…')}</button><span id="secondary-title"></span></div>
         <div id="calendar"></div>
       </section>
       <aside id="day-panel" aria-label="${t('Selected day schedule', 'סדר היום הנבחר')}"></aside>
     </main>
     <footer class="app-footer"><span>${escape(data.settings.location.name)} · ${escape(data.settings.location.timezone)}</span>${iconButton('about', 'about', t('About', 'אודות'))}</footer>
-    <dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
+    <dialog id="jump-dialog" aria-labelledby="jump-title"></dialog><dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
 
   const options: CalendarOptions = {
     plugins: [themes[data.settings.theme], dayGrid, hebrewMonthPlugin, timeGrid, list, interaction, adaptive],
@@ -167,6 +167,7 @@ function render() {
   $('#calendar').onfocus = () => { if (!document.querySelector('.day-select[tabindex="0"]')) selectDay(anchor); };
   $('#add-event').onclick = () => openEvent(newEvent(selected));
   $('#settings').onclick = () => openSettings();
+  $('#jump-hebrew').onclick = openHebrewJump;
   $('#keyboard-help').onclick = openKeyboardHelp;
   $('#about').onclick = () => openAbout();
   $('#print').onclick = () => void printCalendar();
@@ -250,6 +251,42 @@ function calendarKeys(event: KeyboardEvent) {
   }
   if (date) { event.preventDefault(); focusDate(date); }
 }
+function hebrewMonthOptions(year: number, current: string): string {
+  const f = formatter(data.settings.language);
+  return [7, 8, 9, 10, 11, 12, ...(isLeap(year) ? [13] : []), 1, 2, 3, 4, 5, 6]
+    .map(month => option(String(month), f.formatMonth(new JewishCalendar(year, month, 1)), current)).join('');
+}
+function openHebrewJump() {
+  const dialog = $<HTMLDialogElement>('#jump-dialog'), h = hebrew(selected);
+  dialog.innerHTML = `<form id="jump-form"><div class="dialog-heading"><h2 id="jump-title">${t('Go to Hebrew date', 'מעבר לתאריך עברי')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
+    <div class="form-grid three">${field(t('Day', 'יום'), input('jumpDay', h.day, 'number', 'required min="1" max="30" autofocus'))}${field(t('Month', 'חודש'), `<select name="jumpMonth">${hebrewMonthOptions(h.year, String(h.month))}</select>`)}${field(t('Year', 'שנה'), input('jumpYear', h.year, 'number', 'required min="5660" max="5961"'))}</div>
+    <p id="jump-equivalent" class="hint" aria-live="polite"></p><p class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button type="button" class="close-dialog">${t('Cancel', 'ביטול')}</button><button type="submit" class="primary">${t('Go to date', 'מעבר לתאריך')}</button></div></form>`;
+  const form = $<HTMLFormElement>('#jump-form'), value = (name: string) => $<HTMLInputElement>(`[name="${name}"]`, form).value;
+  const readDate = () => {
+    const date = fromHebrew({ day: +value('jumpDay'), month: +value('jumpMonth'), year: +value('jumpYear') });
+    if (date < '1900-01-01' || date > '2200-12-31') throw new Error('range');
+    return date;
+  };
+  form.oninput = event => {
+    if ((event.target as HTMLInputElement).name === 'jumpYear' && $<HTMLInputElement>('[name="jumpYear"]', form).validity.valid) {
+      const month = $<HTMLSelectElement>('[name="jumpMonth"]', form);
+      month.innerHTML = hebrewMonthOptions(+value('jumpYear'), month.value === '13' && !isLeap(+value('jumpYear')) ? '12' : month.value);
+    }
+    $('.form-error', form).textContent = '';
+    try { $('#jump-equivalent').textContent = civil(readDate()).setLocale(data.settings.language).toLocaleString(DateTime.DATE_FULL); }
+    catch { $('#jump-equivalent').textContent = t('Choose a valid date between 1900 and 2200.', 'בחרו תאריך תקין בין 1900 ל־2200.'); }
+  };
+  form.onsubmit = event => {
+    event.preventDefault();
+    try { anchor = selected = readDate(); dialog.close(); render(); $('#jump-hebrew').focus(); }
+    catch { $('.form-error', form).textContent = t('This date does not exist or is outside 1900–2200. Check the day, month and year.', 'התאריך אינו קיים או שאינו בין 1900 ל־2200. בדקו את היום, החודש והשנה.'); }
+  };
+  dialog.querySelectorAll<HTMLButtonElement>('.close-dialog').forEach(button => button.onclick = () => dialog.close());
+  $('#jump-equivalent').textContent = civil(selected).setLocale(data.settings.language).toLocaleString(DateTime.DATE_FULL);
+  decorateActions(dialog); dialog.showModal();
+}
+
 function updateHeader() {
   const date = currentHebrewCivilDate(DateTime.local(), data.settings);
   $('#live-date').textContent = hebrewLabel(date, data.settings.language);
@@ -309,12 +346,7 @@ function openEvent(event: UserEvent) {
     const year = Number(value('hebrewYear'));
     if (!Number.isInteger(year) || year < 5660 || year > 5961) return;
     const current = value('hebrewMonth') || String(hebrew(dateInput.value).month);
-    const f = formatter(data.settings.language), months: [string, string][] = [];
-    for (const month of [7, 8, 9, 10, 11, 12, 13, 1, 2, 3, 4, 5, 6]) {
-      try { months.push([String(month), f.formatMonth(new JewishCalendar(year, month, 1))]); } catch { continue; }
-    }
-    if (!new JewishCalendar(year, 7, 1).isJewishLeapYear()) { const i = months.findIndex(([m]) => m === '13'); if (i >= 0) months.splice(i, 1); }
-    $<HTMLSelectElement>('[name="hebrewMonth"]', form).innerHTML = months.map(([v, l]) => option(v, l, current)).join('');
+    $<HTMLSelectElement>('[name="hebrewMonth"]', form).innerHTML = hebrewMonthOptions(year, current === '13' && !isLeap(year) ? '12' : current);
   }
   function updateConditionalFields() {
     const allDay = $<HTMLInputElement>('[name="allDay"]', form).checked;
