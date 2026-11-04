@@ -446,3 +446,23 @@ test('local search finds notes and opens a repeating series for editing', async 
   await page.locator('#event-query').fill('no such event');
   await expect(page.locator('#search-count')).toHaveText('No matching events.');
 });
+
+test('grouped zmanim search reveals alternatives and preserves them after save', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#configure-zmanim').click();
+  await expect(page.locator('.zman-group')).toHaveCount(8);
+  await expect(page.locator('[name="zman"][value="getAlos120"]')).not.toBeVisible();
+  await page.locator('#zman-search').fill('Alos120');
+  await expect(page.locator('[name="zman"][value="getAlos120"]')).toBeVisible();
+  await page.locator('[name="zman"][value="getAlos120"]').check();
+  await page.locator('#zman-search').fill('no matching formula');
+  await expect(page.locator('#zman-empty')).toBeVisible();
+  await page.locator('#zman-search').fill('');
+  await expect(page.locator('[name="endMethod"] option[value="getSunrise"]')).toHaveCount(0);
+  await page.locator('#settings-form [type="submit"]').click();
+  await page.locator('#configure-zmanim').click();
+  await expect(page.locator('[name="zman"][value="getAlos120"]')).toBeVisible();
+  await expect(page.locator('[name="zman"][value="getAlos120"]')).toBeChecked();
+  await page.locator('#reset-zmanim').click();
+  await expect(page.locator('[name="zman"][value="getAlos120"]')).not.toBeChecked();
+});

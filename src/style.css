@@ -134,7 +134,7 @@ legend { font-size: .9rem; padding: 0 6px; }
 .settings-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--app-border); margin-bottom: 20px; overflow-x: auto; }
 .settings-tabs button { border: 0; border-radius: 0; flex-shrink: 0; }
 .settings-tabs [aria-selected="true"] { box-shadow: inset 0 -2px var(--app-primary); color: var(--app-primary); }
-.zman-choices { max-height: 260px; overflow: auto; border-block: 1px solid var(--app-border); margin-bottom: 24px; }
+.zman-choices { max-height: 340px; overflow: auto; border-block: 1px solid var(--app-border); margin-bottom: 24px; }
 .zman-choice { align-items: flex-start; padding-inline: 4px; }
 .zman-choice input { margin-top: 3px; }
 small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap: anywhere; }
@@ -200,3 +200,14 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 
 #event-results { max-height: 50vh; overflow: auto; margin-top: 12px; }
 .search-result { display: flex; flex-direction: column; align-items: stretch; text-align: start; gap: 6px; width: 100%; margin-block: 8px; overflow-wrap: anywhere; }
+
+.zman-group { padding: 12px 4px; border-bottom: 1px solid var(--app-border); }
+.zman-group > summary { font-weight: 600; cursor: pointer; }
+.group-count, .method-default { font-weight: 400; font-size: .85rem; }
+.method-default { display: inline; margin-inline-start: 8px; color: var(--app-primary); }
+.zman-group .hint { margin-block: 8px; }
+.zman-advanced { margin-block: 12px; }
+.zman-advanced > summary { cursor: pointer; }
+
+#settings-zmanim > .hint { margin-bottom: 12px; }
+#settings-dialog .dialog-actions { position: sticky; bottom: 0; background: var(--app-background); padding-bottom: 12px; }
