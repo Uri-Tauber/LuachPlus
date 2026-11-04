@@ -20,23 +20,28 @@ builds for all three systems. Each release identifies the commit it contains.
 
 ## Get started
 
-1. Open **Settings → Location**. Choose your city or enter its coordinates,
+1. Select **Change** beside the location above the zmanim, or open **Settings → Location**. Choose your city or enter its coordinates,
    elevation and timezone. Check the candle-lighting offset and Israel/diaspora
    observance. The initial location is Jerusalem.
 2. Choose **Hebrew months** or **Gregorian months** above the calendar. Use the
    view buttons for month, week, day or agenda. Single arrows move by one
-   period; double arrows move by one year.
+   period; double arrows move by one year. Use **Go to date** for a Gregorian
+   date or **Hebrew date…** to enter a Hebrew day, month and year.
 3. Select a day to see its zmanim, daily learning and events. Holidays, parasha
    and Omer also appear inside the calendar.
-4. Select **Add event** to create an appointment, birthday or yahrzeit. Events
+4. Select **Add event** to create an event. Events
    can repeat weekly, monthly or yearly. Monthly and yearly events can follow
    either calendar. The editor offers choices for missing dates and Adar.
 5. Open **Settings → Zmanim & learning** to choose the times and opinions you
-   want to display. You can select several opinions together.
+   want to display. Expand a time group to see its default methods, or expand
+   **Additional methods** to compare alternatives. Search reveals matching
+   methods in all groups. You can select several opinions together.
 
 **Settings → Display** changes the language, theme, color palette, light/dark appearance and
-whether zmanim show seconds. The calendar fits the window; scroll inside the
-day panel to see longer schedules.
+whether zmanim show seconds. Smaller desktop windows scroll the calendar
+without shrinking its text. Narrow screens scroll the whole page. Applicable
+candle-lighting, fast and Shabbat/holiday ending times appear above the full
+schedule. Scroll inside the desktop day panel to see longer schedules.
 
 ## Keyboard navigation
 
@@ -45,7 +50,7 @@ Up/Down moves one week, Home/End selects the first/last day of the week, and
 Page Up/Down moves one month. Add Shift for a year jump.
 
 With the calendar focused, use T for today, C for a new event, D/W/M/A for
-views, N/P for the next/previous period, G to enter a date, and S for settings.
+views, N/P for the next/previous period, G to enter a date, / to search events, and S for settings.
 Press ? or select the keyboard button to see the shortcuts. Shortcuts leave
 text fields and dialogs alone; Escape closes dialogs.
 
@@ -58,6 +63,9 @@ These follow familiar patterns from
 Events can last all day, have start/end times, or span several days. End dates
 in the editor are inclusive. Editing or deleting a repeating event changes the
 whole series.
+
+Use the toolbar search button to find an event by title or notes. Search shows
+each repeating series once, with its start date. Select a result to edit it.
 
 Changing location does not move your events or change their clock times.
 Reminders use your computer's local clock and require Luach+ to stay running.
