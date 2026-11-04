@@ -80,6 +80,7 @@ p { line-height: 1.6; }
 .holy-day .day-select { color: var(--app-primary); }
 .outside-month .day-heading, .outside-month .day-facts { opacity: .45; }
 #day-panel { min-height: 0; overflow: auto; padding: 24px 20px; border-inline-start: 1px solid var(--app-border); overflow-wrap: anywhere; }
+.panel-location { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: .9rem; }
 .panel-heading { padding-bottom: 18px; border-bottom: 1px solid var(--app-border); }
 .panel-heading h2 { font-size: 1.2rem; }
 .panel-heading p { font-size: .9rem; margin-top: 7px; }

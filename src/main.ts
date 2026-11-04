@@ -261,11 +261,13 @@ function renderPanel() {
   const times = schedule(selected, s, s.language), learning = studies(selected, s, s.language);
   const occurrences = expandEvents(data.events, selected, addDays(selected, 1));
   $('#day-panel').innerHTML = `<div class="panel-heading"><h2>${escape(hebrewLabel(selected, s.language))}</h2><p>${escape(civil(selected).setLocale(s.language).toLocaleString({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))}</p><p>${escape([facts.holiday, facts.parasha, facts.omer].filter(Boolean).join(' · '))}</p></div>
+    <div class="panel-location"><span>${t('Times for', 'זמנים עבור')} ${escape(s.location.name)}</span><button class="quiet" id="change-location">${t('Change', 'שינוי')}</button></div>
     <section aria-labelledby="zmanim-heading"><div class="section-heading"><h3 id="zmanim-heading">${t('Zmanim', 'זמני היום')}</h3><button class="quiet" id="configure-zmanim">${t('Configure', 'התאמה')}</button></div>
     <dl class="schedule">${times.map(row => `<div class="schedule-row ${row.special ? 'special-time' : ''}"><dt>${escape(row.label)}</dt><dd><time dir="ltr">${escape(timeText(row))}</time></dd></div>`).join('')}</dl></section>
     ${learning.length ? `<section><h3>${t('Daily learning', 'לימוד יומי')}</h3><dl class="learning">${learning.map(row => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl></section>` : ''}
     <section class="panel-events"><div class="section-heading"><h3>${t('Events', 'אירועים')}</h3><button class="quiet" id="panel-add">${t('Add', 'הוספה')}</button></div>${occurrences.length ? occurrences.map(o => `<button class="event-row" data-series="${escape(o.extendedProps.seriesId)}"><span>${escape(o.title)}</span><small>${o.allDay ? t('All day', 'כל היום') : escape(o.start.slice(11, 16))}</small></button>`).join('') : `<p class="empty">${t('No events for this day', 'אין אירועים ביום זה')}</p>`}</section>
     <p class="panel-note">${escape(s.location.name)} · ${s.location.elevation} ${t('m', 'מ׳')}<br>${t('Times shown in the location’s timezone', 'הזמנים לפי אזור הזמן של המיקום')}</p>`;
+  $('#change-location').onclick = () => openSettings('location');
   $('#configure-zmanim').onclick = () => openSettings('zmanim');
   $('#panel-add').onclick = () => openEvent(newEvent(selected));
   decorateActions($('#day-panel'));
