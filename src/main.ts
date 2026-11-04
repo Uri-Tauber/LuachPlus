@@ -104,7 +104,7 @@ function render() {
   root.innerHTML = `
     <header class="app-header">
       <div class="identity"><h1>Luach<span>+</span></h1><div id="live-date"></div></div>
-      <div class="app-actions"><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button>${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}</div>
+      <div class="app-actions"><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button>${iconButton('search-events', 'search', t('Search events', 'חיפוש אירועים'))}${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}</div>
     </header>
     <div id="status" role="status" aria-live="polite"></div>
     <main class="workspace">
@@ -120,7 +120,7 @@ function render() {
       <aside id="day-panel" aria-label="${t('Selected day schedule', 'סדר היום הנבחר')}"></aside>
     </main>
     <footer class="app-footer"><span>${escape(data.settings.location.name)} · ${escape(data.settings.location.timezone)}</span>${iconButton('about', 'about', t('About', 'אודות'))}</footer>
-    <dialog id="jump-dialog" aria-labelledby="jump-title"></dialog><dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
+    <dialog id="search-dialog" aria-labelledby="search-title"></dialog><dialog id="jump-dialog" aria-labelledby="jump-title"></dialog><dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
 
   const options: CalendarOptions = {
     plugins: [themes[data.settings.theme], dayGrid, hebrewMonthPlugin, timeGrid, list, interaction, adaptive],
@@ -167,6 +167,7 @@ function render() {
   $('#calendar').onfocus = () => { if (!document.querySelector('.day-select[tabindex="0"]')) selectDay(anchor); };
   $('#add-event').onclick = () => openEvent(newEvent(selected));
   $('#settings').onclick = () => openSettings();
+  $('#search-events').onclick = openEventSearch;
   $('#jump-hebrew').onclick = openHebrewJump;
   $('#keyboard-help').onclick = openKeyboardHelp;
   $('#about').onclick = () => openAbout();
@@ -242,6 +243,7 @@ function calendarKeys(event: KeyboardEvent) {
     if (views[letter]) { view = views[letter]; anchor = selected; render(); focusDate(selected); }
     else if (letter === 't') focusDate(DateTime.local().toISODate());
     else if (letter === 'c') openEvent(newEvent(selected));
+    else if (key === '/') openEventSearch();
     else if (letter === 'g') $('[name="jump"]').focus();
     else if (letter === 's') openSettings();
     else if (letter === 'n' || letter === 'j' || letter === 'p' || letter === 'k') { navigate(letter === 'n' || letter === 'j' ? 1 : -1); $('#calendar').focus(); }
@@ -251,6 +253,30 @@ function calendarKeys(event: KeyboardEvent) {
   }
   if (date) { event.preventDefault(); focusDate(date); }
 }
+function openEventSearch() {
+  const dialog = $<HTMLDialogElement>('#search-dialog');
+  dialog.innerHTML = `<div class="dialog-heading"><h2 id="search-title">${t('Search events', 'חיפוש אירועים')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
+    ${field(t('Title or notes', 'כותרת או הערות'), '<input type="search" id="event-query" autofocus autocomplete="off">')}
+    <p class="hint">${t('Repeating events appear once, with their series start date.', 'אירועים חוזרים מוצגים פעם אחת, עם תאריך תחילת הסדרה.')}</p>
+    <p id="search-count" class="hint" role="status"></p><div id="event-results"></div>`;
+  const results = $('#event-results', dialog);
+  function update() {
+    const query = $<HTMLInputElement>('#event-query').value.trim().toLocaleLowerCase(data.settings.language);
+    const matches = data.events.filter(event => `${event.title} ${event.description}`.toLocaleLowerCase(data.settings.language).includes(query))
+      .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.title.localeCompare(b.title));
+    $('#search-count').textContent = matches.length ? `${matches.length} ${t('events', 'אירועים')}` : t('No matching events.', 'לא נמצאו אירועים מתאימים.');
+    results.innerHTML = matches.map(event => `<button class="search-result" data-id="${escape(event.id)}"><span>${escape(event.title)}</span><small>${escape(hebrewLabel(event.startDate, data.settings.language))} · ${escape(civil(event.startDate).setLocale(data.settings.language).toLocaleString(DateTime.DATE_MED))}${event.recurrence !== 'none' ? ` · ${t('Repeats', 'חוזר')}` : ''}</small></button>`).join('');
+  }
+  $('#event-query').oninput = update;
+  results.onclick = event => {
+    const id = (event.target as Element).closest<HTMLElement>('[data-id]')?.dataset.id;
+    const found = data.events.find(item => item.id === id);
+    if (found) { dialog.close(); openEvent(found); }
+  };
+  $('.close-dialog', dialog).onclick = () => dialog.close();
+  update(); decorateActions(dialog); dialog.showModal();
+}
+
 function hebrewMonthOptions(year: number, current: string): string {
   const f = formatter(data.settings.language);
   return [7, 8, 9, 10, 11, 12, ...(isLeap(year) ? [13] : []), 1, 2, 3, 4, 5, 6]
@@ -565,7 +591,7 @@ function openKeyboardHelp() {
     ['T', t('Today', 'היום')], ['C', t('New event', 'אירוע חדש')],
     ['D / W / M / A', t('Day / week / month / agenda', 'יום / שבוע / חודש / סדר יום')],
     ['N / P', t('Next / previous period', 'תקופה הבאה / קודמת')],
-    ['G', t('Go to date', 'מעבר לתאריך')], ['S', t('Settings', 'הגדרות')], ['?', t('Keyboard shortcuts', 'קיצורי מקלדת')],
+    ['/', t('Search events', 'חיפוש אירועים')], ['G', t('Go to date', 'מעבר לתאריך')], ['S', t('Settings', 'הגדרות')], ['?', t('Keyboard shortcuts', 'קיצורי מקלדת')],
   ];
   dialog.innerHTML = `<div class="dialog-heading"><h2 id="about-title">${t('Keyboard shortcuts', 'קיצורי מקלדת')}</h2><button class="close-dialog">${t('Close', 'סגירה')}</button></div><p>${t('Tab to the selected date to use these shortcuts. Escape closes dialogs.', 'עברו עם Tab לתאריך הנבחר כדי להשתמש בקיצורים. Escape סוגר חלונות.')}</p><dl class="schedule">${rows.map(([key, label]) => `<div class="schedule-row"><dt>${label}</dt><dd dir="ltr"><kbd>${key}</kbd></dd></div>`).join('')}</dl>`;
   $('.close-dialog', dialog).onclick = () => dialog.close(); decorateActions(dialog); dialog.showModal();

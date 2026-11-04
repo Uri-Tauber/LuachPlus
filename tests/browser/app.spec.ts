@@ -423,3 +423,26 @@ test('Hebrew date jump handles leap Adar and rejects missing days', async ({ pag
   await page.locator('[name="jumpYear"]').fill('5786');
   await expect(page.locator('[name="jumpMonth"] option[value="13"]')).toHaveCount(0);
 });
+
+test('local search finds notes and opens a repeating series for editing', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#add-event').click();
+  await page.locator('[name="title"]').fill('Family lunch');
+  await page.locator('#event-notes summary').click();
+  await page.locator('[name="description"]').fill('Bring challah');
+  await page.locator('#event-repeat summary').first().click();
+  await page.locator('[name="recurrence"]').selectOption('yearly');
+  await page.locator('#event-form [type="submit"]').click();
+  await page.locator('#search-events').click();
+  await expect(page.locator('#event-query')).toBeFocused();
+  await page.locator('#event-query').fill('CHALLAH');
+  await expect(page.locator('.search-result')).toHaveCount(1);
+  await expect(page.locator('.search-result')).toContainText('Repeats');
+  await page.locator('.search-result').click();
+  await expect(page.locator('[name="title"]')).toHaveValue('Family lunch');
+  await expect(page.locator('[name="recurrence"]')).toHaveValue('yearly');
+  await page.keyboard.press('Escape');
+  await page.locator('#search-events').click();
+  await page.locator('#event-query').fill('no such event');
+  await expect(page.locator('#search-count')).toHaveText('No matching events.');
+});

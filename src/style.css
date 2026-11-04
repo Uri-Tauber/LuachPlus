@@ -197,3 +197,6 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
   .selected-day { background: transparent !important; }
   @page { size: landscape; margin: 12mm; }
 }
+
+#event-results { max-height: 50vh; overflow: auto; margin-top: 12px; }
+.search-result { display: flex; flex-direction: column; align-items: stretch; text-align: start; gap: 6px; width: 100%; margin-block: 8px; overflow-wrap: anywhere; }
