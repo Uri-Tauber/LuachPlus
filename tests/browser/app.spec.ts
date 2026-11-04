@@ -138,36 +138,46 @@ test('hidden invalid fields do not strand Save and dialogs have accessible names
   await expect(page.locator('[name="locationName"]')).toBeFocused();
 });
 
-test('the app fits resized windows in both languages and every view', async ({ page }) => {
+test('small windows keep readable dates and allow scrolling to all content', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[name="jump"]').fill('2026-05-02');
+  await page.locator('[name="jump"]').fill('2026-09-26');
   await page.locator('[name="jump"]').dispatchEvent('change');
   for (const language of ['en', 'he']) {
-    if (language === 'he') {
-      await page.locator('#settings').click();
-      await page.locator('[name="language"]').selectOption(language);
-      await page.locator('#settings-form [type="submit"]').click();
-    }
-    for (const [width, height] of [[1440, 900], [1280, 720], [800, 600], [390, 844]]) {
+    await page.locator('#settings').click();
+    await page.locator('[name="language"]').selectOption(language);
+    await page.locator('#settings-form [type="submit"]').click();
+    for (const [width, height] of [[1440, 900], [800, 600], [390, 844], [640, 400]]) {
       await page.setViewportSize({ width, height });
       for (const view of ['month', 'timeGridWeek', 'timeGridDay', 'listWeek']) {
         await page.locator(`[data-view="${view}"]`).click();
-        await expect.poll(() => page.evaluate(currentView => {
-          const within = (selector: string) => {
-            const rect = document.querySelector(selector)!.getBoundingClientRect();
-            return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.left >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1;
-          };
-          const calendar = document.querySelector('#calendar')!.getBoundingClientRect();
-          const datesFit = currentView !== 'month' || [...document.querySelectorAll('#calendar .day-select')].every(button => {
-            const r = button.getBoundingClientRect();
-            return r.top >= calendar.top && r.bottom <= calendar.bottom && r.left >= calendar.left && r.right <= calendar.right;
-          });
-          return datesFit && document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth &&
-            ['.app-header', '.calendar-controls', '.jump-date', '#calendar', '#day-panel', '.app-footer'].every(within);
-        }, view)).toBe(true);
+        expect(await page.locator('#calendar').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(540);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       }
+      await page.locator('[data-view="month"]').click();
+      expect(await page.locator('.day-facts').first().evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(11);
+      await page.locator('.panel-note').scrollIntoViewIfNeeded();
+      await expect(page.locator('.panel-note')).toBeInViewport();
     }
   }
+});
+
+test('location is actionable and special times precede the full schedule', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await page.goto('/');
+  await expect(page.locator('.panel-location')).toContainText('Jerusalem');
+  await page.locator('#change-location').click();
+  await expect(page.locator('#settings-location')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.locator('[name="jump"]').fill('2026-09-26');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await expect(page.locator('.priority-times')).toContainText('Shabbos / Yom Tov ends');
+  await expect(page.locator('.priority-times')).toBeInViewport();
+  const height = await page.locator('#calendar').evaluate(el => el.getBoundingClientRect().height);
+  await page.locator('#add-event').click();
+  await page.locator('[name="title"]').fill('Lunch');
+  await page.locator('#event-form [type="submit"]').click();
+  await expect(page.locator('#status')).toHaveText('Event saved');
+  expect(await page.locator('#calendar').evaluate(el => el.getBoundingClientRect().height)).toBe(height);
 });
 
 test('long schedules scroll inside the day panel and labels contain no developer markers', async ({ page }) => {

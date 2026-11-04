@@ -27,6 +27,7 @@ let view = 'month';
 let calendar: Calendar | undefined;
 let busy = false;
 let trayLanguage = '';
+let messageTimer: ReturnType<typeof setTimeout> | undefined;
 const t = (en: string, he: string) => data.settings.language === 'he' ? he : en;
 const escape = (value: unknown): string => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const $ = <T extends HTMLElement = HTMLElement>(selector: string, scope: ParentNode = document): T => scope.querySelector<T>(selector)!;
@@ -54,9 +55,11 @@ function decorateActions(scope: ParentNode) {
 }
 
 function showMessage(message: string, error = false) {
+  clearTimeout(messageTimer);
   const status = $('#status');
   status.textContent = message;
   status.classList.toggle('error', error);
+  if (!error) messageTimer = setTimeout(() => { status.textContent = ''; }, 5000);
 }
 async function persist(next: AppData): Promise<boolean> {
   if (busy) return false;
@@ -124,7 +127,7 @@ function render() {
     schedulerLicenseKey: 'AGPL-My-Frontend-And-Backend-Are-Open-Source',
     initialView: viewName(), initialDate: anchor, locales: [heLocale], locale: data.settings.language,
     direction: document.documentElement.dir as 'ltr' | 'rtl', colorScheme: colorScheme(), timeZone: 'local',
-    headerToolbar: false, height: '100%', expandRows: true, firstDay: 0, fixedWeekCount: false, showNonCurrentDates: true,
+    headerToolbar: false, height: view === 'month' ? 'auto' : '100%', expandRows: true, firstDay: 0, fixedWeekCount: false, showNonCurrentDates: true,
     nowIndicator: true, dayMaxEvents: 3, selectable: true, editable: false,
     validRange: { start: '1900-01-01', end: '2201-01-01' },
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
@@ -262,10 +265,12 @@ function renderPanel() {
   const occurrences = expandEvents(data.events, selected, addDays(selected, 1));
   $('#day-panel').innerHTML = `<div class="panel-heading"><h2>${escape(hebrewLabel(selected, s.language))}</h2><p>${escape(civil(selected).setLocale(s.language).toLocaleString({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))}</p><p>${escape([facts.holiday, facts.parasha, facts.omer].filter(Boolean).join(' · '))}</p></div>
     <div class="panel-location"><span>${t('Times for', 'זמנים עבור')} ${escape(s.location.name)}</span><button class="quiet" id="change-location">${t('Change', 'שינוי')}</button></div>
-    <section aria-labelledby="zmanim-heading"><div class="section-heading"><h3 id="zmanim-heading">${t('Zmanim', 'זמני היום')}</h3><button class="quiet" id="configure-zmanim">${t('Configure', 'התאמה')}</button></div>
-    <dl class="schedule">${times.map(row => `<div class="schedule-row ${row.special ? 'special-time' : ''}"><dt>${escape(row.label)}</dt><dd><time dir="ltr">${escape(timeText(row))}</time></dd></div>`).join('')}</dl></section>
-    ${learning.length ? `<section><h3>${t('Daily learning', 'לימוד יומי')}</h3><dl class="learning">${learning.map(row => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl></section>` : ''}
+    ${times.some(row => row.special) ? `<section class="priority-times" aria-label="${t('Special times', 'זמנים מיוחדים')}"><dl class="schedule">${times.filter(row => row.special).map(row => `<div class="schedule-row special-time"><dt>${escape(row.label)}</dt><dd><time dir="ltr">${escape(timeText(row))}</time></dd></div>`).join('')}</dl></section>` : ''}
     <section class="panel-events"><div class="section-heading"><h3>${t('Events', 'אירועים')}</h3><button class="quiet" id="panel-add">${t('Add', 'הוספה')}</button></div>${occurrences.length ? occurrences.map(o => `<button class="event-row" data-series="${escape(o.extendedProps.seriesId)}"><span>${escape(o.title)}</span><small>${o.allDay ? t('All day', 'כל היום') : escape(o.start.slice(11, 16))}</small></button>`).join('') : `<p class="empty">${t('No events for this day', 'אין אירועים ביום זה')}</p>`}</section>
+    <section aria-labelledby="zmanim-heading"><div class="section-heading"><h3 id="zmanim-heading">${t('Zmanim', 'זמני היום')}</h3><button class="quiet" id="configure-zmanim">${t('Configure', 'התאמה')}</button></div>
+    <dl class="schedule">${times.filter(row => !row.special).map(row => `<div class="schedule-row ${row.special ? 'special-time' : ''}"><dt>${escape(row.label)}</dt><dd><time dir="ltr">${escape(timeText(row))}</time></dd></div>`).join('')}</dl></section>
+    ${learning.length ? `<section><h3>${t('Daily learning', 'לימוד יומי')}</h3><dl class="learning">${learning.map(row => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl></section>` : ''}
+
     <p class="panel-note">${escape(s.location.name)} · ${s.location.elevation} ${t('m', 'מ׳')}<br>${t('Times shown in the location’s timezone', 'הזמנים לפי אזור הזמן של המיקום')}</p>`;
   $('#change-location').onclick = () => openSettings('location');
   $('#configure-zmanim').onclick = () => openSettings('zmanim');
@@ -584,7 +589,7 @@ async function start() {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (data.settings.colorScheme === 'system') render(); });
   document.addEventListener('keydown', calendarKeys);
   window.addEventListener('beforeprint', () => calendar?.setOption('height', 'auto'));
-  window.addEventListener('afterprint', () => calendar?.setOption('height', '100%'));
+  window.addEventListener('afterprint', () => calendar?.setOption('height', view === 'month' ? 'auto' : '100%'));
   setInterval(() => { updateHeader(); void checkReminders(); }, 1000);
 }
 void start();

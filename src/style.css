@@ -16,7 +16,7 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
 body { margin: 0; min-width: 340px; }
-#app { height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: hidden; }
+#app { height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button, select, input, textarea { border: 1px solid var(--app-border); border-radius: 5px; background: var(--app-background); }
 button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 7px 13px; cursor: pointer; }
@@ -55,12 +55,12 @@ p { line-height: 1.6; }
 .app-actions, .navigation, .view-controls { display: flex; align-items: center; gap: 8px; }
 .navigation { gap: 4px; }
 .view-controls { flex-wrap: wrap; }
-#status { padding-inline: 28px; line-height: 1.6; }
-#status:not(:empty) { padding-block: 10px; border-bottom: 1px solid var(--app-border); }
+#status { position: fixed; inset-block-end: 64px; inset-inline: 24px; z-index: 10; width: fit-content; max-width: calc(100% - 48px); background: var(--app-background); line-height: 1.6; }
+#status:not(:empty) { padding: 12px 16px; border: 1px solid var(--app-border); border-radius: 5px; }
 .error, .form-error { color: #b42318; }
 [data-color-scheme="dark"] .error, [data-color-scheme="dark"] .form-error { color: #ffb4ab; }
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: 0; overflow: hidden; }
-.calendar-section { display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-width: 0; min-height: 0; padding: 24px; }
+.calendar-section { display: grid; grid-template-rows: auto auto minmax(540px, 1fr); min-width: 0; min-height: 0; overflow: auto; padding: 24px; }
 .calendar-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
 .calendar-controls h2 { text-align: center; }
 .jump-date { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-block: 8px 16px; }
@@ -70,12 +70,12 @@ p { line-height: 1.6; }
 #calendar { width: 100%; min-width: 0; min-height: 0; container-type: size; }
 .luach-cell-top { min-width: 0; min-height: 0; flex-shrink: 0; height: auto; align-items: flex-start; }
 .luach-cell-inner { display: block; width: 100%; min-width: 0; height: auto !important; }
-.day-content { width: 100%; min-width: 0; }
+.day-content { width: 100%; min-width: 0; min-height: 80px; }
 .day-heading { display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; }
 .day-select { min-width: 30px; min-height: 30px; padding: 3px 6px; border: 0; background: transparent; font-size: 1rem; font-weight: 650; }
 .secondary-date { font-size: .78rem; }
-.day-facts { display: flex; flex-direction: column; gap: 3px; font-size: .75rem; line-height: 1.4; padding: 2px 5px 5px; width: 100%; white-space: normal; overflow-wrap: anywhere; }
-.day-facts span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.day-facts { display: flex; flex-direction: column; gap: 3px; font-size: .85rem; line-height: 1.4; padding: 2px 5px 5px; width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.day-facts span { overflow-wrap: anywhere; }
 .selected-day { background: color-mix(in srgb, var(--app-primary) 10%, var(--app-background)) !important; }
 .holy-day .day-select { color: var(--app-primary); }
 .outside-month .day-heading, .outside-month .day-facts { opacity: .45; }
@@ -144,12 +144,6 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 #about-dialog li { margin-bottom: 10px; }
 .load-error { max-width: 650px; margin: 10vh auto; padding: 24px; }
 .load-error p { margin-block: 20px; }
-@container (max-height: 480px) {
-  .luach-cell-top { padding: 2px 4px !important; }
-  .luach-cell-inner { padding: 0 !important; }
-  .day-select { min-height: 20px; padding-block: 0; }
-  .day-facts { padding-block: 0; gap: 0; font-size: .65rem; line-height: 1.1; }
-}
 @media (max-width: 1100px) {
   .calendar-controls { gap: 8px; margin-bottom: 8px; }
   .calendar-controls h2 { order: 0; width: auto; flex: 1; text-align: end; }
@@ -164,7 +158,10 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
   .app-header { padding: 16px; flex-wrap: wrap; gap: 16px; }
   .identity { width: 100%; justify-content: space-between; gap: 12px; }
   .app-actions { width: 100%; }
-  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 7fr) minmax(0, 3fr); }
+  html, body { height: auto; overflow: auto; }
+  #app { height: auto; min-height: 100dvh; overflow: visible; }
+  .workspace { display: block; overflow: visible; }
+  .calendar-section { overflow: visible; }
   #day-panel { border-inline-start: 0; border-top: 1px solid var(--app-border); padding: 24px 16px; }
   .calendar-controls { gap: 8px; }
   .calendar-controls h2 { order: 0; width: auto; flex: 1; text-align: end; font-size: 1.1rem; }
@@ -174,9 +171,9 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
   .segmented button { padding-inline: 6px; }
   .jump-date { flex-wrap: wrap; }
   #calendar { font-size: .8rem; }
-  .day-facts { font-size: .65rem; padding-inline: 1px; }
-  .secondary-date { font-size: .65rem; }
-  .day-select { min-width: 24px; padding: 2px; font-size: .9rem; }
+  .day-facts { padding-inline: 2px; }
+  .secondary-date { font-size: .78rem; }
+  .day-select { min-width: 30px; padding: 2px; font-size: 1rem; }
   .form-grid { grid-template-columns: 1fr; }
   .app-footer { padding-inline: 16px; }
   dialog { padding: 18px; }
@@ -190,11 +187,12 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
   .app-header { padding: 0 0 14px; }
   .workspace { display: block; min-height: 0; overflow: visible; }
   .calendar-section { display: block; padding: 16px 0; }
-  #calendar { height: auto !important; container-type: normal; }
+  #calendar { height: auto !important; min-height: 0; container-type: normal; }
   .calendar-controls h2 { text-align: start; }
   #day-panel { display: none; }
   .print-schedule #day-panel { display: block; height: auto; overflow: visible; break-before: page; border: 0; padding: 0; }
   .schedule-row, .learning > div, .panel-heading { break-inside: avoid; }
+  .day-content { min-height: 0; }
   .day-select { padding: 0; min-height: 20px; }
   .selected-day { background: transparent !important; }
   @page { size: landscape; margin: 12mm; }
