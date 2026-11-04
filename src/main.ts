@@ -95,7 +95,7 @@ function dayCell(info: DayCellInfo) {
   const hd = s.language === 'he' ? f.formatHebrewNumber(h.day) : `${h.day}`;
   const primary = s.calendar === 'hebrew' ? hd : String(civil(date).day);
   const secondary = s.calendar === 'hebrew' ? civil(date).toFormat('d') : `${hd} ${f.formatMonth(calendarDay(date))}`;
-  return { html: `<div class="day-content"><div class="day-heading"><button class="day-select" tabindex="${date === selected ? 0 : -1}" aria-pressed="${date === selected}" data-date="${date}" aria-label="${escape([civil(date).setLocale(s.language).toLocaleString({ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), hebrewLabel(date, s.language), facts.holiday, facts.parasha, facts.omer].filter(Boolean).join(' · '))}">${escape(primary)}</button><span class="secondary-date">${escape(secondary)}</span></div>
+  return { html: `<div class="day-content"><div class="day-heading"><button class="day-select"${info.isToday ? ' aria-current="date"' : ''} tabindex="${date === selected ? 0 : -1}" aria-pressed="${date === selected}" data-date="${date}" aria-label="${escape([civil(date).setLocale(s.language).toLocaleString({ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), hebrewLabel(date, s.language), facts.holiday, facts.parasha, facts.omer].filter(Boolean).join(' · '))}">${escape(primary)}</button><span class="secondary-date">${escape(secondary)}</span></div>
     <div class="day-facts">${[facts.holiday, facts.parasha, facts.omer].filter(Boolean).map(v => `<span title="${escape(v)}">${escape(v)}</span>`).join('')}</div></div>` };
 }
 
@@ -128,7 +128,7 @@ function render() {
     schedulerLicenseKey: 'AGPL-My-Frontend-And-Backend-Are-Open-Source',
     initialView: viewName(), initialDate: anchor, locales: [heLocale], locale: data.settings.language,
     direction: document.documentElement.dir as 'ltr' | 'rtl', colorScheme: colorScheme(), timeZone: 'local',
-    headerToolbar: false, height: view === 'month' ? 'auto' : '100%', expandRows: true, firstDay: 0, fixedWeekCount: false, showNonCurrentDates: true,
+    headerToolbar: false, height: '100%', expandRows: true, firstDay: 0, fixedWeekCount: false, showNonCurrentDates: true,
     nowIndicator: true, dayMaxEvents: 3, selectable: true, editable: false,
     validRange: { start: '1900-01-01', end: '2201-01-01' },
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
@@ -671,7 +671,7 @@ async function start() {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (data.settings.colorScheme === 'system') render(); });
   document.addEventListener('keydown', calendarKeys);
   window.addEventListener('beforeprint', () => calendar?.setOption('height', 'auto'));
-  window.addEventListener('afterprint', () => calendar?.setOption('height', view === 'month' ? 'auto' : '100%'));
+  window.addEventListener('afterprint', () => calendar?.setOption('height', '100%'));
   setInterval(() => { updateHeader(); void checkReminders(); }, 1000);
 }
 void start();

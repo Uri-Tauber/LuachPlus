@@ -1,5 +1,26 @@
 import { expect, test } from '@playwright/test';
 
+test('today badge stays on the date button across themes and languages', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+02:00') });
+  await page.goto('/');
+  for (const language of ['en', 'he']) {
+    for (const theme of ['forma', 'monarch', 'breezy', 'pulse', 'classic']) {
+      await page.locator('#settings').click();
+      await page.locator('[name="language"]').selectOption(language);
+      await page.locator('[name="theme"]').selectOption(theme);
+      await page.locator('#settings-form [type="submit"]').click();
+      const today = page.locator('.day-select[data-date="2026-11-04"]');
+      const wrapper = today.locator('xpath=ancestor::div[contains(@class,"luach-cell-inner")]');
+      await expect(wrapper).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      await expect(today).toHaveAttribute('aria-current', 'date');
+      await expect(today).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      const size = await today.boundingBox();
+      expect(size!.width).toBeLessThanOrEqual(40);
+      expect(size!.height).toBeLessThanOrEqual(40);
+    }
+  }
+});
+
 test('Hebrew month boundaries, navigation, Gregorian switch and all views', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -138,25 +159,59 @@ test('hidden invalid fields do not strand Save and dialogs have accessible names
   await expect(page.locator('[name="locationName"]')).toBeFocused();
 });
 
-test('small windows keep readable dates and allow scrolling to all content', async ({ page }) => {
+test('the app fits resized windows in both languages and every view', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[name="jump"]').fill('2026-09-26');
+  await page.locator('[name="jump"]').fill('2026-05-02');
   await page.locator('[name="jump"]').dispatchEvent('change');
   for (const language of ['en', 'he']) {
-    await page.locator('#settings').click();
-    await page.locator('[name="language"]').selectOption(language);
-    await page.locator('#settings-form [type="submit"]').click();
-    for (const [width, height] of [[1440, 900], [800, 600], [390, 844], [640, 400]]) {
+    if (language === 'he') {
+      await page.locator('#settings').click();
+      await page.locator('[name="language"]').selectOption(language);
+      await page.locator('#settings-form [type="submit"]').click();
+    }
+    for (const [width, height] of [[1440, 900], [1280, 720], [800, 600], [390, 844]]) {
       await page.setViewportSize({ width, height });
       for (const view of ['month', 'timeGridWeek', 'timeGridDay', 'listWeek']) {
         await page.locator(`[data-view="${view}"]`).click();
-        expect(await page.locator('#calendar').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(540);
-        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+        await expect.poll(() => page.evaluate(currentView => {
+          const within = (selector: string) => {
+            const rect = document.querySelector(selector)!.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.left >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1;
+          };
+          const calendar = document.querySelector('#calendar')!.getBoundingClientRect();
+          const datesFit = currentView !== 'month' || [...document.querySelectorAll('#calendar .day-select')].every(button => {
+            const r = button.getBoundingClientRect();
+            return r.top >= calendar.top && r.bottom <= calendar.bottom && r.left >= calendar.left && r.right <= calendar.right;
+          });
+          return datesFit && document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth &&
+            ['.app-header', '.calendar-controls', '.jump-date', '#calendar', '#day-panel', '.app-footer'].every(within);
+        }, view)).toBe(true);
       }
-      await page.locator('[data-view="month"]').click();
-      expect(await page.locator('.day-facts').first().evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(11);
-      await page.locator('.panel-note').scrollIntoViewIfNeeded();
-      await expect(page.locator('.panel-note')).toBeInViewport();
+    }
+  }
+});
+
+test('six-week months fit after resizing and returning from print', async ({ page }) => {
+  await page.goto('/');
+  for (const [system, date] of [['hebrew', '2026-09-26'], ['gregorian', '2026-08-15']]) {
+    await page.locator(`[data-system="${system}"]`).click();
+    await page.locator('[name="jump"]').fill(date);
+    await page.locator('[name="jump"]').dispatchEvent('change');
+    await expect(page.locator('.day-select')).toHaveCount(42);
+    for (const [width, height] of [[1440, 900], [1280, 720], [800, 600]]) {
+      await page.setViewportSize({ width, height });
+      await page.evaluate(() => {
+        window.dispatchEvent(new Event('beforeprint'));
+        window.dispatchEvent(new Event('afterprint'));
+      });
+      await expect.poll(() => page.locator('#calendar').evaluate(calendar => {
+        const bounds = calendar.getBoundingClientRect();
+        return bounds.bottom <= innerHeight && [...calendar.querySelectorAll('.day-select')].every(button => {
+          const rect = button.getBoundingClientRect();
+          return rect.top >= bounds.top && rect.bottom <= bounds.bottom;
+        });
+      })).toBe(true);
+      expect(await page.locator('.calendar-section').evaluate(el => el.scrollHeight - el.clientHeight)).toBeLessThanOrEqual(1);
     }
   }
 });
@@ -467,7 +522,7 @@ test('grouped zmanim search reveals alternatives and preserves them after save',
   await expect(page.locator('[name="zman"][value="getAlos120"]')).not.toBeChecked();
 });
 
-test('keyboard selection scrolls a small calendar to keep its date visible', async ({ page }) => {
+test('keyboard selection keeps its date visible in a small calendar', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 600 });
   await page.goto('/');
   await page.locator('[name="jump"]').fill('2026-09-26');

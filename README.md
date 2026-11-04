@@ -38,8 +38,8 @@ builds for all three systems. Each release identifies the commit it contains.
    methods in all groups. You can select several opinions together.
 
 **Settings → Display** changes the language, theme, color palette, light/dark appearance and
-whether zmanim show seconds. Smaller desktop windows scroll the calendar
-without shrinking its text. Narrow screens scroll the whole page. Applicable
+whether zmanim show seconds. The calendar fits the window height and uses a
+compact layout in smaller windows. Applicable
 candle-lighting, fast and Shabbat/holiday ending times appear above the full
 schedule. Scroll inside the desktop day panel to see longer schedules.
 
