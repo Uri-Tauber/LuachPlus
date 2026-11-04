@@ -276,17 +276,24 @@ function openEvent(event: UserEvent) {
   const dialog = $<HTMLDialogElement>('#event-dialog'), existing = data.events.some(e => e.id === event.id);
   dialog.innerHTML = `<form id="event-form"><div class="dialog-heading"><h2 id="event-title">${existing ? t('Edit event · entire series', 'עריכת אירוע · כל הסדרה') : t('New event', 'אירוע חדש')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
     ${field(t('Title', 'כותרת'), input('title', event.title, 'text', 'required maxlength="300" autofocus'))}
-    ${field(t('Description', 'תיאור'), `<textarea name="description" maxlength="10000">${escape(event.description)}</textarea>`)}
-    <div class="form-grid">${field(t('Event type', 'סוג אירוע'), select('kind', [['event', t('Appointment', 'אירוע')], ['birthday', t('Birthday', 'יום הולדת')], ['yahrzeit', t('Yahrzeit', 'יום זיכרון')]], event.kind))}${field(t('Calendar for date entry & repeats', 'לוח להזנת תאריך וחזרות'), select('calendar', [['hebrew', t('Hebrew', 'עברי')], ['gregorian', t('Gregorian', 'לועזי')]], event.calendar))}</div>
-    <div class="form-grid">${field(t('Start date', 'תאריך התחלה'), input('startDate', event.startDate, 'date', 'required min="1900-01-01" max="2200-12-31"'))}${field(t('End date · inclusive', 'תאריך סיום · כולל'), input('endDate', event.endDate, 'date', 'required min="1900-01-01" max="2200-12-31"'))}</div>
-    <fieldset id="hebrew-entry"><legend>${t('Hebrew start date', 'תאריך התחלה עברי')}</legend><div class="form-grid three">${field(t('Day', 'יום'), input('hebrewDay', hebrew(event.startDate).day, 'number', 'min="1" max="30"'))}${field(t('Month', 'חודש'), `<select name="hebrewMonth"></select>`)}${field(t('Year', 'שנה'), input('hebrewYear', hebrew(event.startDate).year, 'number', 'min="5660" max="5961"'))}</div></fieldset>
+    <div class="event-date-heading"><span>${t('Date', 'תאריך')}</span>${field(t('Date calendar', 'לוח לתאריך'), select('calendar', [['hebrew', t('Hebrew', 'עברי')], ['gregorian', t('Gregorian', 'לועזי')]], event.calendar))}</div>
+    <div id="gregorian-entry">${field(t('Start date', 'תאריך התחלה'), input('startDate', event.startDate, 'date', 'required min="1900-01-01" max="2200-12-31"'))}</div>
+    <fieldset id="hebrew-entry"><legend>${t('Hebrew date', 'תאריך עברי')}</legend><div class="form-grid three">${field(t('Day', 'יום'), input('hebrewDay', hebrew(event.startDate).day, 'number', 'required min="1" max="30"'))}${field(t('Month', 'חודש'), `<select name="hebrewMonth"></select>`)}${field(t('Year', 'שנה'), input('hebrewYear', hebrew(event.startDate).year, 'number', 'required min="5660" max="5961"'))}</div></fieldset>
     <p id="event-date-caption" class="hint"></p>
-    ${checkbox('allDay', t('All-day event', 'אירוע של יום שלם'), event.allDay)}
+    <div class="event-date-options">${checkbox('allDay', t('All day', 'כל היום'), event.allDay)}${checkbox('multiDay', t('Multiple days', 'מספר ימים'), event.endDate !== event.startDate)}</div>
+    <div id="event-end-date">${field(t('End date · inclusive (Gregorian)', 'תאריך סיום · כולל (לועזי)'), input('endDate', event.endDate, 'date', 'required min="1900-01-01" max="2200-12-31"'))}</div>
     <div class="form-grid" id="event-times">${field(t('Starts at', 'שעת התחלה'), input('startTime', event.startTime, 'time', 'required'))}${field(t('Ends at', 'שעת סיום'), input('endTime', event.endTime, 'time', 'required'))}</div>
-    <div class="form-grid">${field(t('Repeat', 'חזרה'), select('recurrence', [['none', t('Does not repeat', 'ללא חזרה')], ['weekly', t('Weekly', 'כל שבוע')], ['monthly', t('Monthly', 'כל חודש')], ['yearly', t('Yearly', 'כל שנה')]], event.recurrence))}${field(t('Repeat until · optional', 'חזרה עד · לא חובה'), input('until', event.until, 'date', 'max="2200-12-31"'))}</div>
-    <div id="hebrew-policies" class="form-grid">${field(t('If the day is missing', 'אם היום אינו קיים'), select('missingDay', [['last', t('Last day of month', 'היום האחרון בחודש')], ['skip', t('Skip that occurrence', 'דילוג על המופע')]], event.missingDay))}${field(t('Adar mapping', 'התאמת חודש אדר'), select('adar', [['second', t('Common Adar → Adar II', 'אדר רגיל ← אדר ב׳')], ['first', t('Common Adar → Adar I', 'אדר רגיל ← אדר א׳')], ['both', t('Common Adar → both Adars', 'אדר רגיל ← שני חודשי אדר')], ['skip', t('Skip when month is missing', 'דילוג כשהחודש אינו קיים')]], event.adar))}</div>
-    ${field(t('Reminder', 'תזכורת'), select('reminder', [['', t('No reminder', 'ללא תזכורת')], ...[0, 5, 10, 15, 30, 60, 1440].map(n => [String(n), `${n} ${t('minutes before', 'דקות לפני')}`] as [string, string])], event.reminderMinutes === null ? '' : String(event.reminderMinutes)))}
-    <p class="hint">${t('Reminders run while Luach+ is open. All-day reminders use 09:00 on your computer’s clock.', 'תזכורות פועלות כשהיישום פתוח. תזכורת לאירוע יום שלם בשעה 09:00 לפי שעון המחשב.')}</p>
+    <details class="event-option" id="event-repeat" ${event.recurrence !== 'none' ? 'open' : ''}><summary>${t('Repeat', 'חזרה')}<span id="repeat-summary"></span></summary>
+      ${field(t('Repeat', 'חזרה'), select('recurrence', [['none', t('Does not repeat', 'ללא חזרה')], ['weekly', t('Weekly', 'כל שבוע')], ['monthly', t('Monthly', 'כל חודש')], ['yearly', t('Yearly', 'כל שנה')]], event.recurrence))}
+      <div id="repeat-until">${field(t('Repeat until · optional (Gregorian)', 'חזרה עד · לא חובה (לועזי)'), input('until', event.until, 'date', 'max="2200-12-31"'))}<p class="hint">${t('Leave empty to repeat indefinitely.', 'להמשך חזרה ללא הגבלה, השאירו ריק.')}</p></div>
+      <details id="hebrew-policies" ${event.missingDay !== 'last' || event.adar !== 'second' ? 'open' : ''}><summary>${t('Hebrew date rules', 'כללי תאריך עברי')}</summary><p class="hint">${t('Choose how this series handles dates that do not exist in every year or month.', 'בחרו כיצד הסדרה תטפל בתאריכים שאינם קיימים בכל שנה או חודש.')}</p>
+      ${field(t('If the day is missing', 'אם היום אינו קיים'), select('missingDay', [['last', t('Last day of month', 'היום האחרון בחודש')], ['skip', t('Skip that occurrence', 'דילוג על המופע')]], event.missingDay))}<div id="adar-policy">${field(t('Adar mapping', 'התאמת חודש אדר'), select('adar', [['second', t('Common Adar → Adar II', 'אדר רגיל ← אדר ב׳')], ['first', t('Common Adar → Adar I', 'אדר רגיל ← אדר א׳')], ['both', t('Common Adar → both Adars', 'אדר רגיל ← שני חודשי אדר')], ['skip', t('Skip when month is missing', 'דילוג כשהחודש אינו קיים')]], event.adar))}</div></details>
+    </details>
+    <details class="event-option" id="event-reminder" ${event.reminderMinutes !== null ? 'open' : ''}><summary>${t('Reminder', 'תזכורת')}<span id="reminder-summary"></span></summary>
+      ${field(t('Remind me', 'מועד התזכורת'), select('reminder', [['', t('No reminder', 'ללא תזכורת')], ...[...new Set([0, 5, 10, 15, 30, 60, 1440, ...(event.reminderMinutes === null ? [] : [event.reminderMinutes])])].map(n => [String(n), n === 0 ? t('At event time', 'במועד האירוע') : n === 60 ? t('1 hour before', 'שעה לפני') : n === 1440 ? t('1 day before', 'יום לפני') : `${n} ${t('minutes before', 'דקות לפני')}`] as [string, string])], event.reminderMinutes === null ? '' : String(event.reminderMinutes)))}
+      <p class="hint">${t('Reminders run while Luach+ is open. All-day reminders use 09:00 on your computer’s clock.', 'תזכורות פועלות כשהיישום פתוח. תזכורת לאירוע יום שלם בשעה 09:00 לפי שעון המחשב.')}</p>
+    </details>
+    <details class="event-option" id="event-notes" ${event.description ? 'open' : ''}><summary>${t('Notes', 'הערות')}<span id="notes-summary"></span></summary>${field(t('Description', 'תיאור'), `<textarea name="description" maxlength="10000">${escape(event.description)}</textarea>`)}</details>
     <p class="form-error" role="alert"></p><div class="dialog-actions">${existing ? `<button type="button" id="delete-event" class="danger">${t('Delete entire series', 'מחיקת כל הסדרה')}</button>` : ''}<button type="button" class="close-dialog">${t('Cancel', 'ביטול')}</button><button type="submit" class="primary">${t('Save event', 'שמירת אירוע')}</button></div>
     <div id="delete-confirmation" hidden><p>${t('Delete this event and all its occurrences?', 'למחוק אירוע זה ואת כל המופעים שלו?')}</p><button type="button" id="confirm-delete" class="danger">${t('Confirm deletion', 'אישור מחיקה')}</button></div></form>`;
   const form = $<HTMLFormElement>('#event-form'), value = (name: string) => ($<HTMLInputElement>(`[name="${name}"]`, form)).value;
@@ -310,11 +317,28 @@ function openEvent(event: UserEvent) {
       control.disabled = allDay;
       if (allDay && !control.value) control.value = name === 'startTime' ? '09:00' : '10:00';
     }
+    const multiDay = $<HTMLInputElement>('[name="multiDay"]', form).checked;
+    $('#event-end-date', form).hidden = !multiDay;
+    endInput.disabled = !multiDay;
+    if (!multiDay) endInput.value = dateInput.value;
+    const isHebrew = value('calendar') === 'hebrew';
+    $('#gregorian-entry', form).hidden = isHebrew;
+    dateInput.disabled = isHebrew;
+    const repeating = value('recurrence') !== 'none';
+    $('#repeat-until', form).hidden = !repeating;
+    $<HTMLInputElement>('[name="until"]', form).disabled = !repeating;
     const hebrewFields = $<HTMLFieldSetElement>('#hebrew-entry', form);
     hebrewFields.hidden = value('calendar') !== 'hebrew';
     hebrewFields.disabled = hebrewFields.hidden;
     $('#hebrew-policies', form).hidden = value('calendar') !== 'hebrew' || !['monthly', 'yearly'].includes(value('recurrence'));
-    if (dateInput.value && dateInput.validity.valid) $('#event-date-caption', form).textContent = hebrewLabel(dateInput.value, data.settings.language);
+    $('#adar-policy', form).hidden = value('recurrence') !== 'yearly';
+    if (dateInput.value && dateInput.validity.valid) $('#event-date-caption', form).textContent = isHebrew
+      ? civil(dateInput.value).setLocale(data.settings.language).toLocaleString(DateTime.DATE_FULL)
+      : hebrewLabel(dateInput.value, data.settings.language);
+    const selectedLabel = (name: string) => $<HTMLSelectElement>(`[name="${name}"]`, form).selectedOptions[0].textContent;
+    $('#repeat-summary', form).textContent = selectedLabel('recurrence');
+    $('#reminder-summary', form).textContent = selectedLabel('reminder');
+    $('#notes-summary', form).textContent = value('description') ? t('Added', 'נוספו') : t('Add notes', 'הוספת הערות');
   }
   dateInput.onchange = () => {
     if (!dateInput.validity.valid) return;
@@ -333,16 +357,23 @@ function openEvent(event: UserEvent) {
       $('.form-error', form).textContent = ''; updateConditionalFields();
     } catch { $('.form-error', form).textContent = t('That Hebrew date does not exist.', 'התאריך העברי אינו קיים.'); }
   };
-  for (const name of ['allDay', 'calendar', 'recurrence', 'kind']) $(`[name="${name}"]`, form).onchange = () => {
-    if (name === 'kind' && value('kind') !== 'event' && value('recurrence') === 'none') $<HTMLSelectElement>('[name="recurrence"]', form).value = 'yearly';
+  for (const name of ['allDay', 'multiDay', 'calendar', 'recurrence', 'reminder']) $(`[name="${name}"]`, form).onchange = () => {
     updateConditionalFields();
   };
+  $('[name="description"]', form).oninput = updateConditionalFields;
+  form.addEventListener('invalid', e => {
+    let parent = (e.target as HTMLElement).parentElement;
+    while (parent && parent !== form) {
+      if (parent instanceof HTMLDetailsElement) parent.open = true;
+      parent = parent.parentElement;
+    }
+  }, true);
   form.onsubmit = async e => {
     e.preventDefault();
-    const next: UserEvent = { ...event, title: value('title').trim(), description: value('description'), kind: value('kind') as UserEvent['kind'],
+    const next: UserEvent = { ...event, title: value('title').trim(), description: value('description'),
       startDate: value('startDate'), endDate: value('endDate'), allDay: $<HTMLInputElement>('[name="allDay"]', form).checked,
       startTime: value('startTime'), endTime: value('endTime'), calendar: value('calendar') as UserEvent['calendar'], recurrence: value('recurrence') as UserEvent['recurrence'],
-      missingDay: value('missingDay') as UserEvent['missingDay'], adar: value('adar') as UserEvent['adar'], until: value('until'), reminderMinutes: value('reminder') === '' ? null : +value('reminder') };
+      missingDay: value('missingDay') as UserEvent['missingDay'], adar: value('adar') as UserEvent['adar'], until: value('recurrence') === 'none' ? '' : value('until'), reminderMinutes: value('reminder') === '' ? null : +value('reminder') };
     try {
       if (next.calendar === 'hebrew') {
         const entered = fromHebrew({ year: +value('hebrewYear'), month: +value('hebrewMonth'), day: +value('hebrewDay') });

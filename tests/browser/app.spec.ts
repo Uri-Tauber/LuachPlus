@@ -36,6 +36,7 @@ test('event create, whole-series edit and delete persist; location does not chan
   await form.locator('[name="allDay"]').uncheck();
   await form.locator('[name="startTime"]').fill('09:00');
   await form.locator('[name="endTime"]').fill('10:30');
+  await form.locator('#event-repeat summary').first().click();
   await form.locator('[name="recurrence"]').selectOption('weekly');
   await form.locator('[type="submit"]').click();
   await expect(page.locator('#event-dialog')).not.toBeVisible();
@@ -306,4 +307,91 @@ test('desktop bridge updates tray language at startup and after settings change'
   await expect.poll(languages).toEqual(['en', 'he']);
   await page.locator('#next').click();
   expect(await languages()).toEqual(['en', 'he']);
+});
+
+test('quick event form reveals optional settings and keeps a single-day date in sync', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#add-event').click();
+  const form = page.locator('#event-form');
+  await expect(form.locator('[name="title"]')).toBeFocused();
+  await expect(form.locator('[name="kind"]')).toHaveCount(0);
+  for (const name of ['description', 'recurrence', 'reminder', 'endDate', 'startTime', 'startDate']) {
+    await expect(form.locator(`[name="${name}"]`)).not.toBeVisible();
+  }
+  await form.locator('[name="calendar"]').selectOption('gregorian');
+  await expect(form.locator('#hebrew-entry')).not.toBeVisible();
+  await form.locator('[name="startDate"]').fill('2026-12-01');
+  await form.locator('[name="title"]').fill('Quick plan');
+  await form.locator('[type="submit"]').click();
+  await expect(page.locator('#event-dialog')).not.toBeVisible();
+  await page.locator('[name="jump"]').fill('2026-12-01');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('.event-row').click();
+  await expect(form.locator('[name="startDate"]')).toHaveValue('2026-12-01');
+  await expect(form.locator('[name="endDate"]')).toHaveValue('2026-12-01');
+  await expect(form.locator('[name="multiDay"]')).not.toBeChecked();
+});
+
+test('Hebrew yearly event keeps its end of recurrence, rules and notes when edited', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-11-04');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('#add-event').click();
+  const form = page.locator('#event-form');
+  await form.locator('[name="title"]').fill('Yearly Hebrew event');
+  await form.locator('#event-repeat > summary').click();
+  await expect(form.locator('[name="until"]')).not.toBeVisible();
+  await form.locator('[name="recurrence"]').selectOption('yearly');
+  await form.locator('[name="until"]').fill('2036-11-04');
+  await form.locator('#hebrew-policies > summary').click();
+  await form.locator('[name="missingDay"]').selectOption('skip');
+  await form.locator('[name="adar"]').selectOption('both');
+  await form.locator('#event-notes > summary').click();
+  await form.locator('[name="description"]').fill('Remember this for ten years.');
+  await form.locator('#event-repeat > summary').click();
+  await form.locator('[type="submit"]').click();
+  await expect(page.locator('#event-dialog')).not.toBeVisible();
+  await page.reload();
+  await page.locator('[name="jump"]').fill('2026-11-04');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('.event-row').click();
+  await expect(form.locator('[name="recurrence"]')).toBeVisible();
+  await expect(form.locator('[name="recurrence"]')).toHaveValue('yearly');
+  await expect(form.locator('[name="until"]')).toHaveValue('2036-11-04');
+  await expect(form.locator('[name="missingDay"]')).toHaveValue('skip');
+  await expect(form.locator('[name="adar"]')).toHaveValue('both');
+  await expect(form.locator('[name="description"]')).toBeVisible();
+  await expect(form.locator('[name="description"]')).toHaveValue('Remember this for ten years.');
+});
+
+test('overnight event preserves its date range and reminder; invalid collapsed repeat field reopens', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-11-04');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('#add-event').click();
+  const form = page.locator('#event-form');
+  await form.locator('[name="title"]').fill('Overnight plan');
+  await form.locator('[name="allDay"]').uncheck();
+  await form.locator('[name="multiDay"]').check();
+  await form.locator('[name="endDate"]').fill('2026-11-05');
+  await form.locator('[name="startTime"]').fill('23:00');
+  await form.locator('[name="endTime"]').fill('01:00');
+  await form.locator('#event-repeat > summary').click();
+  await form.locator('[name="recurrence"]').selectOption('weekly');
+  await form.locator('[name="until"]').fill('2300-01-01');
+  await form.locator('#event-repeat > summary').click();
+  await form.locator('[type="submit"]').click();
+  await expect(form.locator('[name="until"]')).toBeVisible();
+  await form.locator('[name="until"]').fill('2027-11-04');
+  await form.locator('#event-reminder > summary').click();
+  await form.locator('[name="reminder"]').selectOption('15');
+  await form.locator('[type="submit"]').click();
+  await expect(page.locator('#event-dialog')).not.toBeVisible();
+  await page.locator('.event-row').click();
+  await expect(form.locator('[name="multiDay"]')).toBeChecked();
+  await expect(form.locator('[name="endDate"]')).toHaveValue('2026-11-05');
+  await expect(form.locator('[name="startTime"]')).toHaveValue('23:00');
+  await expect(form.locator('[name="endTime"]')).toHaveValue('01:00');
+  await expect(form.locator('[name="reminder"]')).toBeVisible();
+  await expect(form.locator('[name="reminder"]')).toHaveValue('15');
 });
