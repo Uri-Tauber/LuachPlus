@@ -221,7 +221,7 @@ function focusDate(date: string) {
   const range = monthRange(anchor, data.settings.calendar);
   if (view !== 'month' || date < range.start || date >= range.end) { anchor = date; selected = date; render(); }
   else selectDay(date);
-  ($<HTMLButtonElement>(`.day-select[data-date="${date}"]`) ?? $('#calendar')).focus({ preventScroll: true });
+  ($<HTMLButtonElement>(`.day-select[data-date="${date}"]`) ?? $('#calendar')).focus();
 }
 function calendarKeys(event: KeyboardEvent) {
   const target = event.target as HTMLElement;
@@ -306,7 +306,7 @@ function openHebrewJump() {
   };
   form.onsubmit = event => {
     event.preventDefault();
-    try { anchor = selected = readDate(); dialog.close(); render(); $('#jump-hebrew').focus(); }
+    try { anchor = selected = readDate(); dialog.close(); render(); ($<HTMLButtonElement>(`.day-select[data-date="${selected}"]`) ?? $('#jump-hebrew')).focus(); }
     catch { $('.form-error', form).textContent = t('This date does not exist or is outside 1900–2200. Check the day, month and year.', 'התאריך אינו קיים או שאינו בין 1900 ל־2200. בדקו את היום, החודש והשנה.'); }
   };
   dialog.querySelectorAll<HTMLButtonElement>('.close-dialog').forEach(button => button.onclick = () => dialog.close());

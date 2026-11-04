@@ -466,3 +466,14 @@ test('grouped zmanim search reveals alternatives and preserves them after save',
   await page.locator('#reset-zmanim').click();
   await expect(page.locator('[name="zman"][value="getAlos120"]')).not.toBeChecked();
 });
+
+test('keyboard selection scrolls a small calendar to keep its date visible', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-09-26');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('.day-select[data-date="2026-09-26"]').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.locator('.day-select[data-date="2026-10-03"]')).toBeFocused();
+  await expect(page.locator('.day-select[data-date="2026-10-03"]')).toBeInViewport();
+});
