@@ -98,6 +98,16 @@ dd { margin: 0; }
 .panel-note { flex-shrink: 0; margin-top: 16px; padding-top: 8px; border-top: 1px solid var(--app-border); }
 .panel-times { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .times-scroll, .events-scroll { overflow: auto; min-height: 0; scrollbar-gutter: stable; padding-inline-end: 16px; }
+/* Explicit thumb states avoid native overlay scrollbars fading into the panel. */
+:is(.times-scroll, .events-scroll) { scrollbar-color: var(--app-primary) var(--app-background); }
+@supports selector(::-webkit-scrollbar) {
+  :is(.times-scroll, .events-scroll) { scrollbar-color: auto; scrollbar-width: auto; }
+  :is(.times-scroll, .events-scroll)::-webkit-scrollbar { width: 10px; height: 10px; }
+  :is(.times-scroll, .events-scroll)::-webkit-scrollbar-track { background: var(--app-background); }
+  :is(.times-scroll, .events-scroll)::-webkit-scrollbar-thumb { background: var(--app-primary); border: 2px solid var(--app-background); border-radius: 5px; }
+  :is(.times-scroll, .events-scroll)::-webkit-scrollbar-thumb:hover,
+  :is(.times-scroll, .events-scroll)::-webkit-scrollbar-thumb:active { background: var(--app-foreground); }
+}
 .panel-events { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 80px; max-height: 40%; }
 .panel-times > .section-heading, .panel-events > .section-heading { flex-shrink: 0; margin-top: 12px; }
 .panel-events .events-scroll { padding-bottom: 2px; }
