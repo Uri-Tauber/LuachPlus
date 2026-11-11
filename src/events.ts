@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { addDays, civil, daysInHebrewMonth, hebrew, isLeap, type CalendarSystem } from './dates';
+import { addDays, civil, daysInHebrewMonth, fromHebrew, hebrew, isLeap, type CalendarSystem } from './dates';
 
 export interface UserEvent {
   id: string;
@@ -46,9 +46,22 @@ export interface EventRange { startStr: string; endStr: string; allDay: boolean 
 export function changeEventRange(event: UserEvent, before: EventRange, after: EventRange): UserEvent {
   const days = (a: string, b: string) => Math.round(civil(a.slice(0, 10)).diff(civil(b.slice(0, 10)), 'days').days);
   const startShift = days(after.startStr, before.startStr);
-  const endShift = days(after.endStr, before.endStr) + Number(before.allDay) - Number(after.allDay);
-  const next = { ...event, startDate: addDays(event.startDate, startShift),
-    endDate: addDays(event.endDate, endShift), allDay: after.allDay,
+  let startDate = addDays(event.startDate, startShift);
+  if (startShift && (event.recurrence === 'monthly' || event.recurrence === 'yearly')) {
+    const targetDate = after.startStr.slice(0, 10);
+    if (event.calendar === 'hebrew') {
+      const anchor = hebrew(event.startDate), target = hebrew(targetDate);
+      startDate = fromHebrew({ year: anchor.year, month: event.recurrence === 'monthly' ? anchor.month : target.month, day: target.day });
+    } else {
+      const anchor = civil(event.startDate), target = civil(targetDate);
+      const month = event.recurrence === 'monthly' ? anchor.month : target.month;
+      const candidate = DateTime.fromObject({ year: anchor.year, month, day: target.day });
+      if (!candidate.isValid) throw new Error('This date cannot anchor the repeating series. Edit its start date in the event editor.');
+      startDate = candidate.toISODate();
+    }
+  }
+  const next = { ...event, startDate,
+    endDate: addDays(startDate, days(after.endStr, after.startStr) - Number(after.allDay)), allDay: after.allDay,
     until: event.until ? addDays(event.until, startShift) : '' };
   if (!after.allDay) { next.startTime = after.startStr.slice(11, 16); next.endTime = after.endStr.slice(11, 16); }
   validateEvent(next);

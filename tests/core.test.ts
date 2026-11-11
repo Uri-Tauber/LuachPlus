@@ -131,3 +131,15 @@ test('calendar edits preserve inclusive dates, overnight times, series and valid
   expect(event.startDate).toBe('2026-11-01');
   expect(() => changeEventRange(event, before, { ...before, endStr: '2026-11-08' })).toThrow();
 });
+
+test('moving later monthly occurrences maps the drop day through the recurrence calendar', () => {
+  const event = { ...newEvent('2026-01-30'), title: 'Monthly', recurrence: 'monthly' as const, calendar: 'gregorian' as const };
+  const next = changeEventRange(event, { startStr: '2026-04-30', endStr: '2026-05-01', allDay: true }, { startStr: '2026-05-01', endStr: '2026-05-02', allDay: true });
+  expect(expandEvents([next], '2026-05-01', '2026-05-02')).toHaveLength(1);
+  const anchor = fromHebrew({ year: 5786, month: 7, day: 29 });
+  const before = fromHebrew({ year: 5786, month: 8, day: 29 });
+  const after = fromHebrew({ year: 5786, month: 9, day: 1 });
+  const hebrewEvent = { ...newEvent(anchor), title: 'Hebrew monthly', recurrence: 'monthly' as const };
+  const moved = changeEventRange(hebrewEvent, { startStr: before, endStr: addDays(before, 1), allDay: true }, { startStr: after, endStr: addDays(after, 1), allDay: true });
+  expect(expandEvents([moved], after, addDays(after, 1))).toHaveLength(1);
+});
