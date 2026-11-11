@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { DateTime } from 'luxon';
 import { addDays, calendarDay, fromHebrew, hebrew, monthRange, shiftMonth, shiftYear } from '../src/dates';
-import { dueReminders, expandEvents, newEvent, validateEvent } from '../src/events';
+import { dueReminders, expandEvents, newEvent, validateEvent, changeEventRange } from '../src/events';
 import { defaultSettings, presets, validateSettings } from '../src/settings';
 import { validateData } from '../src/storage';
 import { currentHebrewCivilDate, makeZmanCalendar, schedule, zmanLabel } from '../src/zmanim';
@@ -117,4 +117,17 @@ describe('zmanim and settings', () => {
     expect(() => validateData({ version: 1, settings: defaultSettings(), events: [event, event] })).toThrow();
     expect(() => validateData({ version: 1, settings: { ...defaultSettings(), location: { timezone: 'Mars' } }, events: [] })).toThrow();
   });
+});
+
+test('calendar edits preserve inclusive dates, overnight times, series and validation', () => {
+  const event = { ...newEvent('2026-11-01'), title: 'Plan', recurrence: 'weekly' as const, until: '2026-12-01' };
+  const before = { startStr: '2026-11-08', endStr: '2026-11-09', allDay: true };
+  const moved = changeEventRange(event, before, { startStr: '2026-11-09', endStr: '2026-11-10', allDay: true });
+  expect([moved.startDate, moved.endDate, moved.until]).toEqual(['2026-11-02', '2026-11-02', '2026-12-02']);
+  const resized = changeEventRange(event, before, { ...before, endStr: '2026-11-11' });
+  expect(resized.endDate).toBe('2026-11-03');
+  const timed = changeEventRange(event, before, { startStr: '2026-11-08T23:00:00+02:00', endStr: '2026-11-09T01:00:00+02:00', allDay: false });
+  expect([timed.startDate, timed.endDate, timed.startTime, timed.endTime]).toEqual(['2026-11-01', '2026-11-02', '23:00', '01:00']);
+  expect(event.startDate).toBe('2026-11-01');
+  expect(() => changeEventRange(event, before, { ...before, endStr: '2026-11-08' })).toThrow();
 });

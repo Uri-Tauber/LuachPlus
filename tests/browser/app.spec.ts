@@ -547,3 +547,31 @@ test('whole day tiles highlight on hover and focus, and double click opens that 
   await page.locator('#event-form [name="calendar"]').selectOption('gregorian');
   await expect(page.locator('#event-form [name="startDate"]')).toHaveValue(date!);
 });
+
+test('mouse drag and edge resize persist calendar event dates', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[name="jump"]').fill('2026-11-04');
+  await page.locator('[name="jump"]').dispatchEvent('change');
+  await page.locator('#add-event').click();
+  await page.locator('[name="title"]').fill('Drag plan');
+  await page.locator('#event-form [type="submit"]').click();
+  const event = page.locator('#calendar [role="listitem"] [role="button"]').filter({ hasText: 'Drag plan' });
+  const start = await event.boundingBox();
+  const source = await page.locator('.calendar-day[data-date="2026-11-04"]').boundingBox();
+  const target = await page.locator('.calendar-day[data-date="2026-11-05"]').boundingBox();
+  await page.mouse.move(start!.x + start!.width / 2, start!.y + start!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(start!.x + start!.width / 2 + target!.x - source!.x, start!.y + start!.height / 2, { steps: 15 });
+  await page.mouse.up();
+  const saved = () => page.evaluate(() => JSON.parse(localStorage.getItem('luach-plus-v1')!).events[0]);
+  await expect.poll(async () => (await saved()).startDate).toBe('2026-11-05');
+  const box = await event.boundingBox();
+  await page.mouse.move(box!.x + box!.width - 2, box!.y + box!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width - 2 + target!.width, box!.y + box!.height / 2, { steps: 15 });
+  await page.mouse.up();
+  await expect.poll(async () => (await saved()).endDate).toBe('2026-11-06');
+  await page.reload();
+  expect((await saved()).startDate).toBe('2026-11-05');
+  expect((await saved()).endDate).toBe('2026-11-06');
+});

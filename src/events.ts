@@ -41,6 +41,20 @@ export function validateEvent(event: UserEvent): void {
   if (event.reminderMinutes !== null && (!Number.isInteger(event.reminderMinutes) || event.reminderMinutes < 0 || event.reminderMinutes > 10080)) throw new Error('Invalid reminder');
 }
 
+export interface EventRange { startStr: string; endStr: string; allDay: boolean }
+
+export function changeEventRange(event: UserEvent, before: EventRange, after: EventRange): UserEvent {
+  const days = (a: string, b: string) => Math.round(civil(a.slice(0, 10)).diff(civil(b.slice(0, 10)), 'days').days);
+  const startShift = days(after.startStr, before.startStr);
+  const endShift = days(after.endStr, before.endStr) + Number(before.allDay) - Number(after.allDay);
+  const next = { ...event, startDate: addDays(event.startDate, startShift),
+    endDate: addDays(event.endDate, endShift), allDay: after.allDay,
+    until: event.until ? addDays(event.until, startShift) : '' };
+  if (!after.allDay) { next.startTime = after.startStr.slice(11, 16); next.endTime = after.endStr.slice(11, 16); }
+  validateEvent(next);
+  return next;
+}
+
 function matches(event: UserEvent, date: string): boolean {
   if (date < event.startDate || (event.until && date > event.until)) return false;
   if (event.recurrence === 'none') return date === event.startDate;

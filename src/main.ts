@@ -9,7 +9,7 @@ import { DateTime } from 'luxon';
 import { isTauri, invoke } from '@tauri-apps/api/core';
 import { JewishCalendar } from 'kosher-zmanim';
 import { addDays, calendarDay, civil, dayFacts, formatter, fromHebrew, hebrew, hebrewLabel, localDate, monthRange, monthTitle, shiftMonth, shiftYear, isLeap } from './dates';
-import { dueReminders, expandEvents, newEvent, validateEvent, type UserEvent } from './events';
+import { dueReminders, expandEvents, newEvent, validateEvent, changeEventRange, type UserEvent } from './events';
 import { presets, validateSettings, type Settings } from './settings';
 import { loadData, saveData, validateData, type AppData } from './storage';
 import { currentHebrewCivilDate, defaultMethods, schedule, studies, zmanLabel, zmanMethods, type ScheduleRow } from './zmanim';
@@ -125,7 +125,7 @@ function render() {
     initialView: viewName(), initialDate: anchor, locales: [heLocale], locale: data.settings.language,
     direction: document.documentElement.dir as 'ltr' | 'rtl', colorScheme: colorScheme(), timeZone: 'local',
     headerToolbar: false, height: '100%', expandRows: true, firstDay: 0, fixedWeekCount: false, showNonCurrentDates: true,
-    nowIndicator: true, dayMaxEvents: 3, selectable: true, editable: false,
+    nowIndicator: true, dayMaxEvents: 3, selectable: true, editable: true, eventResizableFromStart: true,
     validRange: { start: '1900-01-01', end: '2201-01-01' },
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
     views: { hebrewMonth: { visibleRange: (date: Date) => monthRange(localDate(date), 'hebrew') } },
@@ -153,6 +153,8 @@ function render() {
       openEvent(e);
       calendar?.unselect();
     },
+    eventDrop: info => { void saveCalendarChange(info); },
+    eventResize: info => { void saveCalendarChange(info); },
     eventClick: info => { const event = data.events.find(e => e.id === info.event.extendedProps.seriesId); if (event) openEvent(event); },
     events: (info, success, failure) => {
       try { success(expandEvents(data.events, info.startStr.slice(0, 10), info.endStr.slice(0, 10))); } catch (e) { failure(e as Error); }
@@ -214,6 +216,16 @@ function render() {
     } else lastDayClick = { date: down.date, at: now };
   }, true);
   updateHeader(); renderPanel();
+}
+async function saveCalendarChange(info: Parameters<NonNullable<CalendarOptions['eventDrop']>>[0] | Parameters<NonNullable<CalendarOptions['eventResize']>>[0]) {
+  const event = data.events.find(e => e.id === info.event.extendedProps.seriesId);
+  if (!event) { info.revert(); return; }
+  try {
+    const next = changeEventRange(event, info.oldEvent, info.event);
+    if (!await persist({ ...data, events: data.events.map(e => e.id === next.id ? next : e) })) { info.revert(); return; }
+    calendar?.refetchEvents(); renderPanel();
+    showMessage(event.recurrence === 'none' ? t('Event saved', 'האירוע נשמר') : t('Repeating series updated', 'סדרת האירועים עודכנה'));
+  } catch (err) { info.revert(); showMessage(errorText(err), true); }
 }
 function navigate(direction: number) {
   const next = view === 'month' ? shiftMonth(anchor, direction, data.settings.calendar) : addDays(anchor, direction * (view === 'timeGridDay' ? 1 : 7));
