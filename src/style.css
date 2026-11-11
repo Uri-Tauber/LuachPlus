@@ -77,9 +77,9 @@ p { line-height: 1.6; }
 .holy-day .day-select { color: var(--app-primary); }
 .day-select[aria-current="date"] { background: var(--app-primary); color: var(--app-contrast); border-radius: 50%; }
 .outside-month .day-heading, .outside-month .day-facts { opacity: .45; }
-#day-panel { min-height: 0; overflow: auto; padding: 24px 20px; border-inline-start: 1px solid var(--app-border); overflow-wrap: anywhere; }
-.panel-location { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: .9rem; }
-.panel-heading { padding-bottom: 18px; border-bottom: 1px solid var(--app-border); }
+#day-panel { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 24px 20px; border-inline-start: 1px solid var(--app-border); overflow-wrap: anywhere; }
+.panel-location { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .9rem; }
+.panel-heading { flex-shrink: 0; padding-bottom: 12px; border-bottom: 1px solid var(--app-border); }
 .panel-heading h2 { font-size: 1.2rem; }
 .panel-heading p { font-size: .9rem; margin-top: 7px; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block: 20px 8px; }
@@ -95,7 +95,12 @@ dd { margin: 0; }
 .event-row span { overflow-wrap: anywhere; min-width: 0; }
 .event-row small { white-space: nowrap; }
 .empty, .hint, .panel-note { font-size: .85rem; line-height: 1.6; }
-.panel-note { margin-top: 24px; }
+.panel-note { flex-shrink: 0; margin-top: 16px; padding-top: 8px; border-top: 1px solid var(--app-border); }
+.panel-times { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.times-scroll, .events-scroll { overflow: auto; min-height: 0; }
+.panel-events { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 80px; max-height: 40%; }
+.panel-times > .section-heading, .panel-events > .section-heading { flex-shrink: 0; margin-top: 12px; }
+.panel-events .events-scroll { padding-bottom: 2px; }
 .app-footer { direction: ltr; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 12px 24px; border-top: 1px solid var(--app-border); font-size: .8rem; }
 .app-footer .app-actions button { border: 0; padding: 4px; min-height: 30px; font-size: inherit; }
 dialog { width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 40px); padding: 24px; color: var(--app-foreground); background: var(--app-background); border: 1px solid var(--app-border); border-radius: 10px; box-shadow: 0 16px 60px #0003; }
@@ -161,7 +166,9 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 @media (max-width: 760px) {
 
   .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 7fr) minmax(0, 3fr); }
-  #day-panel { border-inline-start: 0; border-top: 1px solid var(--app-border); padding: 24px 16px; }
+  #day-panel { overflow: auto; display: block; border-inline-start: 0; border-top: 1px solid var(--app-border); padding: 24px 16px; }
+  .panel-times { min-height: 200px; max-height: 320px; }
+  .panel-events { max-height: none; }
   .calendar-controls { gap: 8px; }
   .calendar-controls h2 { order: 0; width: auto; flex: 1; text-align: end; font-size: 1.1rem; }
   .navigation { flex: 0 0 auto; }
@@ -189,6 +196,8 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
   .calendar-controls h2 { text-align: start; }
   #day-panel { display: none; }
   .print-schedule #day-panel { display: block; height: auto; overflow: visible; break-before: page; border: 0; padding: 0; }
+  .panel-times, .panel-events { display: block; max-height: none; }
+  .times-scroll, .events-scroll { overflow: visible; }
   .schedule-row, .learning > div, .panel-heading { break-inside: avoid; }
   .day-select { padding: 0; min-height: 20px; }
   .selected-day { background: transparent !important; }

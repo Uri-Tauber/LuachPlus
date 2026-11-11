@@ -216,7 +216,7 @@ test('six-week months fit after resizing and returning from print', async ({ pag
   }
 });
 
-test('location is actionable and special times precede the full schedule', async ({ page }) => {
+test('location is actionable and special times stay highlighted within the schedule', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 600 });
   await page.goto('/');
   await expect(page.locator('.panel-location')).toContainText('Jerusalem');
@@ -225,8 +225,8 @@ test('location is actionable and special times precede the full schedule', async
   await page.keyboard.press('Escape');
   await page.locator('[name="jump"]').fill('2026-09-26');
   await page.locator('[name="jump"]').dispatchEvent('change');
-  await expect(page.locator('.priority-times')).toContainText('Shabbos / Yom Tov ends');
-  await expect(page.locator('.priority-times')).toBeInViewport();
+  await expect(page.locator('.schedule .special-time')).toContainText(['Shabbos / Yom Tov ends']);
+  await expect(page.locator('.panel-events')).toBeInViewport();
   const height = await page.locator('#calendar').evaluate(el => el.getBoundingClientRect().height);
   await page.locator('#add-event').click();
   await page.locator('[name="title"]').fill('Lunch');
@@ -244,7 +244,7 @@ test('long schedules scroll inside the day panel and labels contain no developer
   await page.locator('#settings-form [type="submit"]').click();
   expect(await page.locator('.schedule-row').count()).toBeGreaterThan(100);
   await expect(page.locator('.schedule')).not.toContainText('Itim');
-  await page.locator('#day-panel').evaluate(panel => { panel.scrollTop = panel.scrollHeight; });
+  await page.locator('.times-scroll').evaluate(panel => { panel.scrollTop = panel.scrollHeight; });
   await expect(page.locator('.panel-note')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(720);
   await page.locator('#about').click();
@@ -574,4 +574,21 @@ test('mouse drag and edge resize persist calendar event dates', async ({ page })
   await page.reload();
   expect((await saved()).startDate).toBe('2026-11-05');
   expect((await saved()).endDate).toBe('2026-11-06');
+});
+
+test('day events remain visible beside long independently scrolling times', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/');
+  await page.locator('#configure-zmanim').click();
+  await page.locator('[name="zman"]').evaluateAll(inputs => inputs.forEach(input => (input as HTMLInputElement).checked = true));
+  await page.locator('#settings-form [type="submit"]').click();
+  await page.locator('#add-event').click();
+  await page.locator('[name="title"]').fill('Visible appointment');
+  await page.locator('#event-form [type="submit"]').click();
+  await expect(page.locator('.event-row')).toBeInViewport({ ratio: 1 });
+  await expect(page.locator('.panel-location')).toBeInViewport({ ratio: 1 });
+  const eventsTop = await page.locator('.panel-events').evaluate(el => el.getBoundingClientRect().top);
+  await page.locator('.times-scroll').evaluate(el => { el.scrollTop = el.scrollHeight; });
+  expect(await page.locator('.panel-events').evaluate(el => el.getBoundingClientRect().top)).toBe(eventsTop);
+  await expect(page.locator('.event-row')).toBeInViewport({ ratio: 1 });
 });
