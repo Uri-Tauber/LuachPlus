@@ -133,7 +133,7 @@ function render() {
     dayCellTopClass: 'luach-cell-top',
     dayCellTopInnerClass: 'luach-cell-inner',
     dayCellClass: info => {
-      const date = localDate(info.date), classes = [];
+      const date = localDate(info.date), classes = ['calendar-day'];
       if (date === selected) classes.push('selected-day');
       if (view === 'month') { const r = monthRange(anchor, data.settings.calendar); if (date < r.start || date >= r.end) classes.push('outside-month'); }
       if (dayFacts(date, data.settings.language, data.settings.location.inIsrael).holy) classes.push('holy-day');
@@ -193,6 +193,26 @@ function render() {
     const button = (e.target as Element).closest<HTMLButtonElement>('.day-select');
     if (button) selectDay(button.dataset.date!);
   });
+  // Selection overlays are replaced between clicks, so native dblclick is unreliable.
+  let pressedDay: { date: string; x: number; y: number } | undefined;
+  let lastDayClick = { date: '', at: 0 };
+  const dayAt = (e: PointerEvent) => document.elementsFromPoint(e.clientX, e.clientY)
+    .find(el => el.matches('.calendar-day[data-date]')) as HTMLElement | undefined;
+  $('#calendar').addEventListener('pointerdown', e => {
+    const target = e.target as Element;
+    const day = dayAt(e);
+    pressedDay = e.button === 0 && day && !target.closest('a, [role="listitem"]')
+      ? { date: day.dataset.date!, x: e.clientX, y: e.clientY } : undefined;
+  }, true);
+  $('#calendar').addEventListener('pointerup', e => {
+    const down = pressedDay; pressedDay = undefined;
+    if (!down || dayAt(e)?.dataset.date !== down.date || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
+    const now = performance.now();
+    if (lastDayClick.date === down.date && now - lastDayClick.at < 500) {
+      lastDayClick = { date: '', at: 0 };
+      selectDay(down.date); openEvent(newEvent(down.date));
+    } else lastDayClick = { date: down.date, at: now };
+  }, true);
   updateHeader(); renderPanel();
 }
 function navigate(direction: number) {
@@ -203,7 +223,7 @@ function navigate(direction: number) {
 function selectDay(date: string) {
   selected = date;
   document.querySelectorAll('.selected-day').forEach(el => el.classList.remove('selected-day'));
-  document.querySelectorAll(`[data-date="${date}"]`).forEach(el => { const cell = el.closest('td'); if (cell) cell.classList.add('selected-day'); });
+  document.querySelectorAll(`[data-date="${date}"]`).forEach(el => { const cell = el.closest('.calendar-day'); if (cell) cell.classList.add('selected-day'); });
   $<HTMLInputElement>('[name="jump"]').value = date;
   document.querySelectorAll<HTMLButtonElement>('.day-select').forEach(button => {
     const active = button.dataset.date === selected;

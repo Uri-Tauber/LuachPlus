@@ -532,3 +532,18 @@ test('keyboard selection keeps its date visible in a small calendar', async ({ p
   await expect(page.locator('.day-select[data-date="2026-10-03"]')).toBeFocused();
   await expect(page.locator('.day-select[data-date="2026-10-03"]')).toBeInViewport();
 });
+
+test('whole day tiles highlight on hover and focus, and double click opens that date', async ({ page }) => {
+  await page.goto('/');
+  const tile = page.locator('.calendar-day[data-date]').filter({ has: page.locator('.day-select') }).nth(10);
+  const date = await tile.getAttribute('data-date');
+  const before = await tile.evaluate(el => getComputedStyle(el).backgroundColor);
+  await tile.hover({ position: { x: 5, y: 50 } });
+  expect(await tile.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe(before);
+  await tile.locator('.day-select').focus();
+  await expect(tile).toHaveCSS('outline-style', 'solid');
+  await tile.dblclick({ position: { x: 5, y: 50 } });
+  await expect(page.locator('#event-dialog')).toBeVisible();
+  await page.locator('#event-form [name="calendar"]').selectOption('gregorian');
+  await expect(page.locator('#event-form [name="startDate"]')).toHaveValue(date!);
+});

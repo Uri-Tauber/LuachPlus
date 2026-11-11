@@ -208,3 +208,8 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 
 #settings-zmanim > .hint { margin-bottom: 12px; }
 #settings-dialog .dialog-actions { position: sticky; bottom: 0; background: var(--app-background); padding-bottom: 12px; }
+
+.calendar-day:hover { background: color-mix(in srgb, var(--app-primary) 6%, var(--app-background)); }
+.calendar-day:has(.day-select:focus-visible) { outline: 2px solid var(--app-primary); outline-offset: -2px; }
+.calendar-day .day-select:focus-visible { outline: none; }
+.calendar-day .day-select:hover { background: transparent; }
