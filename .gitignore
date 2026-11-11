@@ -14,3 +14,6 @@ DESIGN.md
 PLAN.md
 SPEC.md
 .impeccable/
+
+src-tauri/Cargo.lock
+src-tauri/gen/

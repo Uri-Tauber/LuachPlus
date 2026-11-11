@@ -103,10 +103,6 @@ function render() {
   calendar?.destroy();
   configureAppearance();
   root.innerHTML = `
-    <header class="app-header">
-      <div class="identity"><h1>Luach<span>+</span></h1><div id="live-date"></div></div>
-      <div class="app-actions"><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button>${iconButton('search-events', 'search', t('Search events', 'חיפוש אירועים'))}${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}</div>
-    </header>
     <div id="status" role="status" aria-live="polite"></div>
     <main class="workspace">
       <section class="calendar-section" aria-label="${t('Calendar', 'לוח שנה')}">
@@ -115,12 +111,12 @@ function render() {
           <h2 id="period-title"></h2>
           <div class="view-controls">${segments('system', t('Calendar', 'לוח שנה'), [['hebrew', t('Hebrew', 'עברי'), 'hebrew'], ['gregorian', t('Gregorian', 'לועזי'), 'gregorian']], data.settings.calendar)}${segments('view', t('Calendar view', 'תצוגת הלוח'), [['month', t('Month', 'חודש'), 'month'], ['timeGridWeek', t('Week', 'שבוע'), 'week'], ['timeGridDay', t('Day', 'יום'), 'day'], ['listWeek', t('Agenda', 'סדר יום'), 'agenda']], view)}</div>
         </div>
-        <div class="jump-date">${field(t('Go to date', 'מעבר לתאריך'), input('jump', selected, 'date', 'min="1900-01-01" max="2200-12-31"'))}<button id="jump-hebrew">${t('Hebrew date…', 'תאריך עברי…')}</button><span id="secondary-title"></span></div>
+        <div class="jump-date">${field(t('Go to date', 'מעבר לתאריך'), input('jump', selected, 'date', 'min="1900-01-01" max="2200-12-31"'))}<button id="jump-hebrew">${t('Hebrew date…', 'תאריך עברי…')}</button><span id="secondary-title"></span><span id="live-date"></span></div>
         <div id="calendar"></div>
       </section>
       <aside id="day-panel" aria-label="${t('Selected day schedule', 'סדר היום הנבחר')}"></aside>
     </main>
-    <footer class="app-footer"><span>${escape(data.settings.location.name)} · ${escape(data.settings.location.timezone)}</span>${iconButton('about', 'about', t('About', 'אודות'))}</footer>
+    <footer class="app-footer"><div class="app-actions">${iconButton('about', 'about', t('About', 'אודות'))}${iconButton('search-events', 'search', t('Search events', 'חיפוש אירועים'))}${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}</div><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button></footer>
     <dialog id="search-dialog" aria-labelledby="search-title"></dialog><dialog id="jump-dialog" aria-labelledby="jump-title"></dialog><dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
 
   const options: CalendarOptions = {
