@@ -618,3 +618,31 @@ test('location picker groups Israel and Diaspora and translates Israeli names', 
   await expect(page.locator('.panel-location')).toContainText('חיפה');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('luach-plus-v1')!).settings.location.name)).toBe('Haifa');
 });
+
+test('settings content scrolls above its footer and time values clear the scrollbar', async ({ page }) => {
+  await page.goto('/');
+  for (const language of ['en', 'he']) {
+    await page.locator('#settings').click();
+    await page.locator('[name="language"]').selectOption(language);
+    await page.locator('#settings-form [type="submit"]').click();
+    for (const width of [1280, 760]) {
+      await page.setViewportSize({ width, height: 600 });
+      await page.locator('#configure-zmanim').click();
+      await page.locator('[name="yerushalmi"]').scrollIntoViewIfNeeded();
+      expect(await page.locator('#settings-zmanim').evaluate(panel => {
+        const footer = document.querySelector('#settings-form > .dialog-actions')!.getBoundingClientRect();
+        const dialog = document.querySelector('#settings-dialog')!.getBoundingClientRect();
+        const last = panel.querySelector('[name="yerushalmi"]')!.getBoundingClientRect();
+        return panel.getBoundingClientRect().bottom <= footer.top && last.bottom <= footer.top && footer.bottom <= dialog.bottom;
+      })).toBe(true);
+      await page.locator('#settings-form .close-dialog').first().click();
+      expect(await page.locator('.times-scroll').evaluate(panel => {
+        const rect = panel.getBoundingClientRect(), rtl = getComputedStyle(panel).direction === 'rtl';
+        return [...panel.querySelectorAll('time')].every(time => {
+          const value = time.getBoundingClientRect();
+          return rtl ? value.left >= rect.left + 16 : value.right <= rect.right - 16;
+        });
+      })).toBe(true);
+    }
+  }
+});

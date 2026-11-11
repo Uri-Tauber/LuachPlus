@@ -97,7 +97,7 @@ dd { margin: 0; }
 .empty, .hint, .panel-note { font-size: .85rem; line-height: 1.6; }
 .panel-note { flex-shrink: 0; margin-top: 16px; padding-top: 8px; border-top: 1px solid var(--app-border); }
 .panel-times { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.times-scroll, .events-scroll { overflow: auto; min-height: 0; }
+.times-scroll, .events-scroll { overflow: auto; min-height: 0; scrollbar-gutter: stable; padding-inline-end: 16px; }
 .panel-events { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 80px; max-height: 40%; }
 .panel-times > .section-heading, .panel-events > .section-heading { flex-shrink: 0; margin-top: 12px; }
 .panel-events .events-scroll { padding-bottom: 2px; }
@@ -219,7 +219,14 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 .zman-group > summary { font-weight: 600; cursor: pointer; }
 .group-count, .method-default { font-weight: 400; font-size: .85rem; }
 .method-default { display: inline; margin-inline-start: 8px; color: var(--app-primary); }
-#settings-dialog .dialog-actions { position: sticky; bottom: 0; background: var(--app-background); padding-bottom: 12px; }
+#settings-dialog { padding: 0; overflow: hidden; }
+#settings-form { display: flex; flex-direction: column; max-height: calc(100dvh - 42px); padding: 24px; }
+#settings-form > .dialog-heading, #settings-form > .settings-tabs,
+#settings-form > .form-error, #settings-form > .dialog-actions { flex-shrink: 0; }
+#settings-form > [role="tabpanel"] { min-height: 0; overflow: auto; scrollbar-gutter: stable; padding: 4px; }
+@media (max-width: 760px) {
+  #settings-form { padding: 18px; }
+}
 
 .calendar-day:hover { background: color-mix(in srgb, var(--app-primary) 6%, var(--app-background)); }
 .calendar-day:has(.day-select:focus-visible) { outline: 2px solid var(--app-primary); outline-offset: -2px; }
