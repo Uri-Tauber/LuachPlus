@@ -493,8 +493,8 @@ function openSettings(tab = 'display') {
   const groupedChoices = zmanGroups.map(group => {
     const methods = zmanMethods.filter(m => m !== 'getCandleLighting' && zmanGroup(m) === group.id);
     if (!methods.length) return '';
-    const basic = methods.filter(m => defaultMethods.includes(m)), extra = methods.filter(m => !defaultMethods.includes(m));
-    return `<details class="zman-group" ${extra.some(m => s.zmanMethods.includes(m)) ? 'open' : ''}><summary>${escape(group[s.language])}<span class="group-count"></span></summary><p class="hint">${escape(s.language === 'he' ? group.hintHe : group.hintEn)}</p>${basic.map(choice).join('')}${extra.length ? `<details class="zman-advanced" ${extra.some(m => s.zmanMethods.includes(m)) ? 'open' : ''}><summary>${t('Additional methods', 'שיטות נוספות')} (${extra.length})</summary>${extra.map(choice).join('')}</details>` : ''}</details>`;
+    const additionalSelected = methods.some(m => !defaultMethods.includes(m) && s.zmanMethods.includes(m));
+    return `<details class="zman-group" ${additionalSelected ? 'open' : ''}><summary>${escape(group[s.language])}<span class="group-count"></span></summary>${methods.map(choice).join('')}</details>`;
   }).join('');
   dialog.innerHTML = `<form id="settings-form" novalidate><div class="dialog-heading"><h2 id="settings-title">${t('Settings', 'הגדרות')}</h2><button type="button" class="close-dialog">${t('Close', 'סגירה')}</button></div>
     <div class="settings-tabs" role="tablist">${([['display', t('Display', 'תצוגה'), 'palette'], ['location', t('Location', 'מיקום'), 'location'], ['zmanim', t('Zmanim & learning', 'זמנים ולימוד'), 'clock'], ['backup', t('Backup', 'גיבוי'), 'backup']] as [string, string, Icon][]).map(([id, label, symbol]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="settings-${id}" data-tab="${id}">${icon(symbol)}${label}</button>`).join('')}</div>
@@ -514,9 +514,8 @@ function openSettings(tab = 'display') {
       <datalist id="timezones">${Intl.supportedValuesOf('timeZone').map(zone => `<option value="${zone}"></option>`).join('')}</datalist>
     </section>
     <section id="settings-zmanim" role="tabpanel" aria-labelledby="tab-zmanim">
-      <div class="section-heading"><h3>${t('Zmanim', 'זמני היום')}</h3><button type="button" id="reset-zmanim">${t('Reset selection', 'איפוס הבחירה')}</button></div>
-      <p class="hint">${t('Degrees (°) describe the sun’s angle below the horizon. Seasonal minutes vary with day length. Default methods are marked; expand additional methods to compare alternatives.', 'מעלות (°) מציינות את זווית השמש מתחת לאופק. דקות זמניות משתנות לפי אורך היום. שיטות ברירת המחדל מסומנות; פתחו שיטות נוספות להשוואת חלופות.')}</p>
-      ${field(t('Filter zmanim', 'סינון זמנים'), '<input type="search" id="zman-search">')}
+      <div class="section-heading"><h3>${t('Zmanim', 'זמני היום')}</h3><div class="app-actions"><button type="button" id="toggle-zman-search" class="icon-button" aria-label="${t('Filter zmanim', 'סינון זמנים')}" title="${t('Filter zmanim', 'סינון זמנים')}" aria-expanded="false" aria-controls="zman-search-field">${icon('filter')}</button><button type="button" id="reset-zmanim">${t('Reset selection', 'איפוס הבחירה')}</button></div></div>
+      <div id="zman-search-field" hidden>${field(t('Filter zmanim', 'סינון זמנים'), '<input type="search" id="zman-search">')}</div>
       <div class="zman-choices">${groupedChoices}</div><p id="zman-empty" class="hint" hidden>${t('No matching methods. Try a different name.', 'לא נמצאו שיטות מתאימות. נסו שם אחר.')}</p>
       <h3>${t('Special days', 'ימים מיוחדים')}</h3>
       ${field(t('Shabbos / Yom Tov ends', 'צאת שבת וחג'), `<select name="endMethod">${methodOptions('night', s.endMethod)}</select>`)}
@@ -573,7 +572,7 @@ function openSettings(tab = 'display') {
   function updateZmanChoices() {
     const query = $<HTMLInputElement>('#zman-search').value.trim().toLowerCase();
     form.querySelectorAll<HTMLElement>('.zman-choice').forEach(el => el.hidden = !el.dataset.search!.includes(query));
-    form.querySelectorAll<HTMLDetailsElement>('.zman-group, .zman-advanced').forEach(group => {
+    form.querySelectorAll<HTMLDetailsElement>('.zman-group').forEach(group => {
       const choices = [...group.querySelectorAll<HTMLElement>('.zman-choice')];
       group.hidden = !choices.some(choice => !choice.hidden);
       if (query) { group.dataset.beforeSearch ??= String(group.open); group.open = true; }
@@ -584,6 +583,13 @@ function openSettings(tab = 'display') {
     $('#zman-empty').hidden = !!form.querySelector('.zman-choice:not([hidden])');
   }
   $('#zman-search').oninput = updateZmanChoices;
+  $('#toggle-zman-search').onclick = () => {
+    const field = $('#zman-search-field'), button = $('#toggle-zman-search'), search = $<HTMLInputElement>('#zman-search');
+    field.hidden = !field.hidden;
+    button.setAttribute('aria-expanded', String(!field.hidden));
+    if (!field.hidden) search.focus();
+    else { search.value = ''; updateZmanChoices(); }
+  };
   form.querySelectorAll<HTMLInputElement>('[name="zman"]').forEach(input => input.onchange = updateZmanChoices);
   $('#reset-zmanim').onclick = () => {
     form.querySelectorAll<HTMLInputElement>('[name="zman"]').forEach(input => input.checked = defaultMethods.includes(input.value));

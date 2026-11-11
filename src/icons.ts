@@ -4,11 +4,11 @@ import {
   mdiChevronLeft, mdiChevronRight, mdiChevronDoubleLeft, mdiChevronDoubleRight,
   mdiAlphabetLatin, mdiAbjadHebrew, mdiKeyboardOutline, mdiRestore, mdiContentSaveOutline,
   mdiDeleteOutline, mdiDownload, mdiUpload, mdiInformationOutline,
-  mdiPaletteOutline, mdiMapMarkerOutline, mdiClockOutline, mdiBackupRestore,
+  mdiFilterOutline, mdiPaletteOutline, mdiMapMarkerOutline, mdiClockOutline, mdiBackupRestore,
 } from '@mdi/js';
 
 const paths = {
-  add: mdiPlus, print: mdiPrinterOutline, settings: mdiCogOutline, search: mdiMagnify,
+  filter: mdiFilterOutline, add: mdiPlus, print: mdiPrinterOutline, settings: mdiCogOutline, search: mdiMagnify,
   close: mdiClose, today: mdiCalendarToday, month: mdiCalendarMonthOutline,
   week: mdiViewWeekOutline, day: mdiViewDayOutline, agenda: mdiFormatListBulleted,
   previous: mdiChevronLeft, next: mdiChevronRight, previousYear: mdiChevronDoubleLeft,

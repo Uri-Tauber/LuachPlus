@@ -219,11 +219,6 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 .zman-group > summary { font-weight: 600; cursor: pointer; }
 .group-count, .method-default { font-weight: 400; font-size: .85rem; }
 .method-default { display: inline; margin-inline-start: 8px; color: var(--app-primary); }
-.zman-group .hint { margin-block: 8px; }
-.zman-advanced { margin-block: 12px; }
-.zman-advanced > summary { cursor: pointer; }
-
-#settings-zmanim > .hint { margin-bottom: 12px; }
 #settings-dialog .dialog-actions { position: sticky; bottom: 0; background: var(--app-background); padding-bottom: 12px; }
 
 .calendar-day:hover { background: color-mix(in srgb, var(--app-primary) 6%, var(--app-background)); }

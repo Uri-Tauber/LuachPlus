@@ -100,6 +100,7 @@ test('settings switch language immediately, filter zmanim and support stock them
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await expect(page.locator('#add-event')).toHaveText('הוספת אירוע');
   await page.locator('#configure-zmanim').click();
+  await page.locator('#toggle-zman-search').click();
   await page.locator('#zman-search').fill('Baal');
   const count = await page.locator('.zman-choice:visible').count();
   expect(count).toBeGreaterThan(0);
@@ -505,7 +506,10 @@ test('local search finds notes and opens a repeating series for editing', async 
 test('grouped zmanim search reveals alternatives and preserves them after save', async ({ page }) => {
   await page.goto('/');
   await page.locator('#configure-zmanim').click();
-  await expect(page.locator('.zman-group')).toHaveCount(8);
+  await expect(page.locator('.zman-group')).toHaveCount(25);
+  await expect(page.locator('#zman-search')).not.toBeVisible();
+  await page.locator('#toggle-zman-search').click();
+  await expect(page.locator('#zman-search')).toBeFocused();
   await expect(page.locator('[name="zman"][value="getAlos120"]')).not.toBeVisible();
   await page.locator('#zman-search').fill('Alos120');
   await expect(page.locator('[name="zman"][value="getAlos120"]')).toBeVisible();
