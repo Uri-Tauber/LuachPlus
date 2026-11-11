@@ -116,7 +116,7 @@ function render() {
       </section>
       <aside id="day-panel" aria-label="${t('Selected day schedule', 'סדר היום הנבחר')}"></aside>
     </main>
-    <footer class="app-footer"><div class="app-actions">${iconButton('about', 'about', t('About', 'אודות'))}${iconButton('search-events', 'search', t('Search events', 'חיפוש אירועים'))}${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}</div><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button></footer>
+    <footer class="app-footer"><div class="app-actions">${iconButton('about', 'about', t('About', 'אודות'))}${iconButton('keyboard-help', 'keyboard', t('Keyboard shortcuts', 'קיצורי מקלדת'))}${iconButton('settings', 'settings', t('Settings', 'הגדרות'))}${iconButton('print', 'print', t('Print', 'הדפסה'))}${iconButton('search-events', 'search', t('Search events', 'חיפוש אירועים'))}</div><button id="add-event" class="primary">${icon('add')}${t('Add event', 'הוספת אירוע')}</button></footer>
     <dialog id="search-dialog" aria-labelledby="search-title"></dialog><dialog id="jump-dialog" aria-labelledby="jump-title"></dialog><dialog id="settings-dialog" aria-labelledby="settings-title"></dialog><dialog id="event-dialog" aria-labelledby="event-title"></dialog><dialog id="about-dialog" aria-labelledby="about-title"></dialog>`;
 
   const options: CalendarOptions = {
