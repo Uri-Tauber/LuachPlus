@@ -8,6 +8,10 @@ export interface Settings extends ZmanSettings {
   palette?: string;
 }
 export const presets = locations;
+export function locationName(name: string, language: Language): string {
+  const preset = presets.find(p => p.name === name || p.hebrewName === name);
+  return preset ? (language === 'he' ? preset.hebrewName ?? preset.name : preset.name) : name;
+}
 export function defaultSettings(): Settings {
   return { language: navigator.language.startsWith('he') ? 'he' : 'en', direction: 'auto', theme: 'forma',
     palette: 'blue', colorScheme: 'system', seconds: false, calendar: 'hebrew', printSchedule: false,

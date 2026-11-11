@@ -596,3 +596,21 @@ test('day events remain visible beside long independently scrolling times', asyn
     await expect(page.locator('.event-row')).toBeInViewport({ ratio: 1 });
   }
 });
+
+test('location picker groups Israel and Diaspora and translates Israeli names', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#settings').click();
+  await page.locator('[name="language"]').selectOption('he');
+  await page.locator('#settings-form [type="submit"]').click();
+  await expect(page.locator('.panel-location')).toContainText('ירושלים');
+  await page.locator('#change-location').click();
+  await expect(page.locator('#location-presets optgroup')).toHaveCount(2);
+  await expect(page.locator('[name="locationName"]')).toHaveValue('ירושלים');
+  await page.locator('#toggle-location-search').click();
+  await page.locator('#location-search').fill('חיפה');
+  await expect(page.locator('#location-presets optgroup option')).toHaveCount(1);
+  await page.locator('#location-presets').selectOption({ label: 'חיפה, ישראל' });
+  await page.locator('#settings-form [type="submit"]').click();
+  await expect(page.locator('.panel-location')).toContainText('חיפה');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('luach-plus-v1')!).settings.location.name)).toBe('Haifa');
+});

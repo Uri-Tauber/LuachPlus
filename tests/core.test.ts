@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { DateTime } from 'luxon';
 import { addDays, calendarDay, fromHebrew, hebrew, monthRange, shiftMonth, shiftYear } from '../src/dates';
 import { dueReminders, expandEvents, newEvent, validateEvent, changeEventRange } from '../src/events';
-import { defaultSettings, presets, validateSettings } from '../src/settings';
+import { defaultSettings, presets, locationName, validateSettings } from '../src/settings';
 import { validateData } from '../src/storage';
 import { currentHebrewCivilDate, makeZmanCalendar, schedule, zmanLabel } from '../src/zmanim';
 import libraryMethods from '../src/data/zman-methods.json';
@@ -142,4 +142,13 @@ test('moving later monthly occurrences maps the drop day through the recurrence 
   const hebrewEvent = { ...newEvent(anchor), title: 'Hebrew monthly', recurrence: 'monthly' as const };
   const moved = changeEventRange(hebrewEvent, { startStr: before, endStr: addDays(before, 1), allDay: true }, { startStr: after, endStr: addDays(after, 1), allDay: true });
   expect(expandEvents([moved], after, addDays(after, 1))).toHaveLength(1);
+});
+
+test('Israeli presets have Hebrew names without changing canonical saved names or manual names', () => {
+  for (const preset of presets.filter(p => p.inIsrael)) {
+    expect(preset.hebrewName).toBeTruthy();
+    expect(locationName(locationName(preset.name, 'he'), 'en')).toBe(preset.name);
+  }
+  expect(locationName('Jerusalem', 'he')).toBe('ירושלים');
+  expect(locationName('My own location', 'he')).toBe('My own location');
 });

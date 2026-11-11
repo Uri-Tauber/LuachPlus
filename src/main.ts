@@ -10,7 +10,7 @@ import { isTauri, invoke } from '@tauri-apps/api/core';
 import { JewishCalendar } from 'kosher-zmanim';
 import { addDays, calendarDay, civil, dayFacts, formatter, fromHebrew, hebrew, hebrewLabel, localDate, monthRange, monthTitle, shiftMonth, shiftYear, isLeap } from './dates';
 import { dueReminders, expandEvents, newEvent, validateEvent, changeEventRange, type UserEvent } from './events';
-import { presets, validateSettings, type Settings } from './settings';
+import { presets, locationName, validateSettings, type Settings } from './settings';
 import { loadData, saveData, validateData, type AppData } from './storage';
 import { currentHebrewCivilDate, defaultMethods, schedule, studies, zmanLabel, zmanMethods, type ScheduleRow } from './zmanim';
 import { themes, applyPalette } from './themes';
@@ -360,7 +360,7 @@ function renderPanel() {
     <div class="times-scroll"><dl class="schedule">${times.map(row => `<div class="schedule-row ${row.special ? 'special-time' : ''}"><dt>${escape(row.label)}</dt><dd><time dir="ltr">${escape(timeText(row))}</time></dd></div>`).join('')}</dl>
     ${learning.length ? `<section><h3>${t('Daily learning', 'לימוד יומי')}</h3><dl class="learning">${learning.map(row => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl></section>` : ''}</div></section>
     <section class="panel-events"><div class="section-heading"><h3>${t('Events', 'אירועים')}</h3><button class="quiet" id="panel-add">${t('Add', 'הוספה')}</button></div><div class="events-scroll">${occurrences.length ? occurrences.map(o => `<button class="event-row" data-series="${escape(o.extendedProps.seriesId)}"><span>${escape(o.title)}</span><small>${o.allDay ? t('All day', 'כל היום') : escape(o.start.slice(11, 16))}</small></button>`).join('') : `<p class="empty">${t('No events for this day', 'אין אירועים ביום זה')}</p>`}</div></section>
-    <div class="panel-note"><div class="panel-location"><span>${t('Times for', 'זמנים עבור')} ${escape(s.location.name)} · ${s.location.elevation} ${t('m', 'מ׳')}</span><button class="quiet" id="change-location">${t('Change', 'שינוי')}</button></div><p>${t('Do not rely on these times to the exact minute.', 'אין לסמוך על הזמנים בצמצום')}</p></div>`;
+    <div class="panel-note"><div class="panel-location"><span>${t('Times for', 'זמנים עבור')} ${escape(locationName(s.location.name, s.language))} · ${s.location.elevation} ${t('m', 'מ׳')}</span><button class="quiet" id="change-location">${t('Change', 'שינוי')}</button></div><p>${t('Do not rely on these times to the exact minute.', 'אין לסמוך על הזמנים בצמצום')}</p></div>`;
   $('#change-location').onclick = () => openSettings('location');
   $('#configure-zmanim').onclick = () => openSettings('zmanim');
   $('#panel-add').onclick = () => openEvent(newEvent(selected));
@@ -507,7 +507,7 @@ function openSettings(tab = 'display') {
       <div class="section-heading"><h3>${t('Location', 'מיקום')}</h3><button type="button" id="toggle-location-search" class="icon-button" aria-label="${t('Search locations', 'חיפוש מיקום')}" title="${t('Search locations', 'חיפוש מיקום')}" aria-expanded="false" aria-controls="location-search-field">${icon('search')}</button></div>
       <div id="location-search-field" hidden>${field(t('Search city', 'חיפוש עיר'), '<input type="search" id="location-search" autocomplete="off">')}</div>
       ${field(t('Location presets', 'מיקומים מוגדרים'), `<select id="location-presets" size="5"></select>`)}
-      <div class="form-grid">${field(t('Location name', 'שם המיקום'), input('locationName', s.location.name, 'text', 'required maxlength="150"'))}${field(t('Timezone', 'אזור זמן'), input('timezone', s.location.timezone, 'text', 'required list="timezones" dir="ltr"'))}
+      <div class="form-grid">${field(t('Location name', 'שם המיקום'), input('locationName', locationName(s.location.name, s.language), 'text', 'required maxlength="150"'))}${field(t('Timezone', 'אזור זמן'), input('timezone', s.location.timezone, 'text', 'required list="timezones" dir="ltr"'))}
       ${field(t('Latitude', 'קו רוחב'), input('latitude', s.location.latitude, 'number', 'required min="-90" max="90" step="any" dir="ltr"'))}${field(t('Longitude', 'קו אורך'), input('longitude', s.location.longitude, 'number', 'required min="-180" max="180" step="any" dir="ltr"'))}
       ${field(t('Elevation · metres', 'גובה · מטרים'), input('elevation', s.location.elevation, 'number', 'required min="-500" max="9000" step="any"'))}${field(t('Candle lighting · minutes before sunset', 'הדלקת נרות · דקות לפני השקיעה'), input('candleMinutes', s.location.candleMinutes, 'number', 'required min="0" max="120" step="1"'))}</div>
       ${checkbox('inIsrael', t('Israel holiday observance', 'מנהגי החגים בארץ ישראל'), s.location.inIsrael)}${checkbox('useElevation', t('Adjust zmanim for elevation', 'התאמת הזמנים לגובה המיקום'), s.useElevation)}
@@ -550,7 +550,10 @@ function openSettings(tab = 'display') {
   });
   function filterLocations() {
     const filter = $<HTMLInputElement>('#location-search').value.toLowerCase();
-    $('#location-presets').innerHTML = `<option value="">${t('Choose a location', 'בחירת מיקום')}</option>` + presets.map((p, i) => ({ p, i })).filter(({ p }) => `${p.name} ${p.country}`.toLowerCase().includes(filter)).map(({ p, i }) => option(String(i), `${p.name}, ${p.country}`, '')).join('');
+    $('#location-presets').innerHTML = `<option value="">${t('Choose a location', 'בחירת מיקום')}</option>` + [true, false].map(inIsrael => {
+      const entries = presets.map((p, i) => ({ p, i })).filter(({ p }) => p.inIsrael === inIsrael && `${p.name} ${p.hebrewName ?? ''} ${p.country}`.toLowerCase().includes(filter));
+      return entries.length ? `<optgroup label="${t(inIsrael ? 'Israel' : 'Diaspora', inIsrael ? 'ישראל' : 'חוץ לארץ')}">${entries.map(({ p, i }) => option(String(i), `${locationName(p.name, s.language)}, ${p.inIsrael ? t('Israel', 'ישראל') : p.country}`, '')).join('')}</optgroup>` : '';
+    }).join('');
   }
   $('#location-search').oninput = filterLocations; filterLocations();
   $('#toggle-location-search').onclick = () => {
@@ -564,7 +567,7 @@ function openSettings(tab = 'display') {
     const index = (e.target as HTMLSelectElement).value;
     if (index === '') return;
     const p = presets[+index];
-    for (const [name, v] of Object.entries({ locationName: p.name, timezone: p.timezone, latitude: p.latitude, longitude: p.longitude, elevation: p.elevation, candleMinutes: p.candleMinutes })) $<HTMLInputElement>(`[name="${name}"]`, form).value = String(v);
+    for (const [name, v] of Object.entries({ locationName: locationName(p.name, s.language), timezone: p.timezone, latitude: p.latitude, longitude: p.longitude, elevation: p.elevation, candleMinutes: p.candleMinutes })) $<HTMLInputElement>(`[name="${name}"]`, form).value = String(v);
     $<HTMLInputElement>('[name="inIsrael"]', form).checked = p.inIsrael;
   };
   function updateZmanChoices() {
@@ -620,7 +623,7 @@ function openSettings(tab = 'display') {
     next.palette = value('palette');
     for (const name of ['language', 'direction', 'theme', 'colorScheme', 'endMethod', 'fastStartMethod', 'fastEndMethod'] as const) (next as unknown as Record<string, unknown>)[name] = value(name);
     for (const name of ['seconds', 'printSchedule', 'useElevation', 'bavli', 'yerushalmi'] as const) next[name] = $<HTMLInputElement>(`[name="${name}"]`, form).checked;
-    next.location = { name: value('locationName').trim(), timezone: value('timezone').trim(), latitude: +value('latitude'), longitude: +value('longitude'), elevation: +value('elevation'), candleMinutes: +value('candleMinutes'), inIsrael: $<HTMLInputElement>('[name="inIsrael"]', form).checked };
+    next.location = { name: locationName(value('locationName').trim(), 'en'), timezone: value('timezone').trim(), latitude: +value('latitude'), longitude: +value('longitude'), elevation: +value('elevation'), candleMinutes: +value('candleMinutes'), inIsrael: $<HTMLInputElement>('[name="inIsrael"]', form).checked };
     next.zmanMethods = Array.from(form.querySelectorAll<HTMLInputElement>('[name="zman"]:checked'), input => input.value);
     try { validateSettings(next); if (await persist({ ...data, settings: next })) { dialog.close(); render(); } else $('.form-error', form).textContent = t('Could not save settings. Try again.', 'לא ניתן לשמור הגדרות. נסו שוב.'); }
     catch (err) { $('.form-error', form).textContent = errorText(err); }
