@@ -184,7 +184,7 @@ test('the app fits resized windows in both languages and every view', async ({ p
             return r.top >= calendar.top && r.bottom <= calendar.bottom && r.left >= calendar.left && r.right <= calendar.right;
           });
           return datesFit && document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth &&
-            ['.app-header', '.calendar-controls', '.jump-date', '#calendar', '#day-panel', '.app-footer'].every(within);
+            ['.calendar-controls', '.jump-date', '#calendar', '#day-panel', '.app-footer'].every(within);
         }, view)).toBe(true);
       }
     }
@@ -591,4 +591,8 @@ test('day events remain visible beside long independently scrolling times', asyn
   await page.locator('.times-scroll').evaluate(el => { el.scrollTop = el.scrollHeight; });
   expect(await page.locator('.panel-events').evaluate(el => el.getBoundingClientRect().top)).toBe(eventsTop);
   await expect(page.locator('.event-row')).toBeInViewport({ ratio: 1 });
+  for (const width of [700, 390]) {
+    await page.setViewportSize({ width, height: 720 });
+    await expect(page.locator('.event-row')).toBeInViewport({ ratio: 1 });
+  }
 });

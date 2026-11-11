@@ -165,17 +165,25 @@ small[dir="ltr"] { display: block; font-size: .72rem; opacity: .8; overflow-wrap
 }
 @media (max-width: 760px) {
 
-  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 7fr) minmax(0, 3fr); }
-  #day-panel { overflow: auto; display: block; border-inline-start: 0; border-top: 1px solid var(--app-border); padding: 24px 16px; }
-  .panel-times { min-height: 200px; max-height: 320px; }
-  .panel-events { max-height: none; }
+  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(280px, 40%); }
+  #day-panel { border-inline-start: 0; border-top: 1px solid var(--app-border); padding: 12px 16px; }
+  .panel-heading { padding-bottom: 6px; }
+  .panel-heading p { margin-top: 3px; }
+  .panel-note { margin-top: 4px; padding-top: 4px; font-size: .8rem; }
+  .panel-times > .section-heading { margin-block: 4px; }
+  .panel-times #configure-zmanim { min-height: 24px; padding-block: 1px; }
+  .panel-events { min-height: 84px; }
+  .panel-events > .section-heading { margin-block: 4px; }
+  .panel-events #panel-add { min-height: 24px; padding-block: 1px; }
   .calendar-controls { gap: 8px; }
   .calendar-controls h2 { order: 0; width: auto; flex: 1; text-align: end; font-size: 1.1rem; }
   .navigation { flex: 0 0 auto; }
   .view-controls { flex: 1 0 100%; gap: 4px; }
   .view-segments .segment-label { display: none; }
   .segmented button { padding-inline: 6px; }
-  .jump-date { flex-wrap: wrap; }
+  .jump-date { flex-wrap: wrap; gap: 4px; }
+  .jump-date .field { gap: 4px; }
+  .jump-date input { width: 130px; }
   #calendar { font-size: .8rem; }
   .day-facts { font-size: .65rem; padding-inline: 1px; }
   .secondary-date { font-size: .65rem; }
